@@ -92,13 +92,12 @@
       width: auto;
     }
 
-    /* 端末画面幅に合わせて綺麗に1行で収まるレスポンシブタイトル */
     .start-title {
       font-size: clamp(1.6rem, 5.5vw, 2.6rem);
       color: #d97706;
       font-weight: bold;
       text-shadow: 1px 1px 0px white;
-      white-space: nowrap; /* 途中で不自然に折り返さない */
+      white-space: nowrap;
     }
 
     .btn-tonton {
@@ -175,7 +174,7 @@
     }
 
     #draggable.stage2-size {
-      width: 175px;  /* 黒鍵3本にぴったりの大迫力サイズ */
+      width: 175px;
       height: 175px;
     }
 
@@ -201,7 +200,6 @@
       object-fit: contain;
       pointer-events: none;
       filter: drop-shadow(0 4px 10px rgba(0,0,0,0.22));
-      transition: transform 0s; /* 不自然な回転補正アニメーションを即座にカット */
     }
 
     .emoji-fallback {
@@ -210,24 +208,25 @@
       display: none;
     }
 
-    /* --- お団子の回転統一ロジック ---
-       iPad（横画面）：最初から最後までずーっと「真横（三の字）」
-       iPhone（縦画面）：最初から最後までずーっと「縦向き（川の字）」
+    /* --- お団子の回転ロジック ---
+       ・運ぶとき（鍵盤の上）：iPad・iPhone問わず【常に横向き（寝た状態）】
+         → 横に3つ並ぶ黒鍵をぴったり覆って覚えやすくするため。
+       ・お皿に並ぶとき：
+         - iPad（横画面）：横向き「三」の字
+         - iPhone（縦画面）：縦向き「川」の字
     */
     .is-dango {
-      transform: rotate(90deg); /* iPad（横画面）標準：真横 */
+      transform: rotate(90deg); /* 運ぶときは常に横向き */
     }
 
     .tray-item-dango {
-      transform: rotate(90deg); /* iPad（横画面）標準：お皿でも真横 */
+      transform: rotate(90deg); /* iPad（横画面）お皿：横向き「三」 */
     }
 
     @media (orientation: portrait) {
-      .is-dango {
-        transform: rotate(0deg) !important; /* iPhone（縦画面）：常に縦向き */
-      }
+      /* iPhone（縦画面）のときのみ、お皿の中のお団子を縦向き「川」にする */
       .tray-item-dango {
-        transform: rotate(0deg) !important;
+        transform: rotate(0deg);
       }
     }
 
@@ -254,7 +253,6 @@
       padding-bottom: 10px;
     }
 
-    /* 標準CSSピアノ鍵盤 */
     .piano-keyboard {
       display: flex;
       position: relative;
@@ -277,7 +275,6 @@
       margin: 0 2px;
     }
 
-    /* --- 黒鍵ターゲット判定エリア --- */
     .black-keys-target {
       position: absolute;
       top: 8px;
@@ -314,7 +311,6 @@
       opacity: 0;
     }
 
-    /* カスタム画像読み込み時の黒鍵ぴったり位置指定 */
     #keyboard-wrapper.has-custom-bg .stage1-target {
       top: 12%;
       left: 36%;
@@ -364,7 +360,7 @@
       width: 100%;
       height: 100%;
       display: flex;
-      flex-direction: column; /* 横画面（iPad）時は「三」の字に縦並び */
+      flex-direction: column; /* iPad（横画面）時：縦に積んで「三」の形を作る */
       justify-content: space-around;
       align-items: center;
     }
@@ -471,7 +467,7 @@
       }
 
       #tray-area {
-        flex-direction: row; /* 縦画面（iPhone）時は横一列「川」に並べる */
+        flex-direction: row; /* iPhone（縦画面）時：横に並べて「川」の形を作る */
       }
     }
   </style>
@@ -776,7 +772,7 @@
         speakGuide("さくらんぼを くろい けんばんの上に おいてね");
 
       } else if (stageNum === 2) {
-        // ステージ2：お団子（大迫力サイズ & 向き固定適用）
+        // ステージ2：お団子（大迫力サイズ & 運ぶ時は常に横向き）
         draggable.classList.add('stage2-size');
         itemImg.classList.add('is-dango');
 
@@ -862,20 +858,14 @@
       const itemRect = draggable.getBoundingClientRect();
       const targetRect = targetArea.getBoundingClientRect();
 
-      // 指で運んできたイラストの中心座標
       const itemCenterX = itemRect.left + itemRect.width / 2;
       const itemCenterY = itemRect.top + itemRect.height / 2;
 
-      /* =========================================================
-         【黒鍵の真上だけを判定する厳格ロジック】
-         ・左右（MARGIN_X）：少しの遊び（15px）
-         ・上方向（MARGIN_Y_TOP）：黒鍵の上側領域（10px）
-         ・下方向（MARGIN_Y_BOTTOM）：★マイナス10px★
-           （黒鍵の下端を超える＝白い部分に触れた瞬間即アウト！）
-         ========================================================= */
+      /* 【黒鍵の真上だけを判定する厳格ロジック】
+         ・下方向（MARGIN_Y_BOTTOM）：マイナス10px（白い部分に触れた瞬間即アウト） */
       const MARGIN_X = 15;
       const MARGIN_Y_TOP = 10;
-      const MARGIN_Y_BOTTOM = -10; // 白鍵への食い出しを厳格にカット
+      const MARGIN_Y_BOTTOM = -10;
 
       const isHit =
         itemCenterX >= (targetRect.left - MARGIN_X) &&
