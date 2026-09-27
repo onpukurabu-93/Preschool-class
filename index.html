@@ -23,7 +23,7 @@
       overflow: hidden;
       background: #f0f9ff;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      touch-action: none; /* スマホでのスクロールやピンチズームを無効化 */
+      touch-action: none;
     }
 
     /* ゲーム全体のメインコンテナ */
@@ -77,17 +77,16 @@
       display: flex;
       justify-content: center;
       align-items: flex-start;
-      /* 背景画像の指定 (kenban.png) */
-      background-image: url('kenban.png');
       background-size: contain;
       background-repeat: no-repeat;
       background-position: center;
     }
 
-    /* CSSによる鍵盤の描画（kenban.png画像がない場合のフォールバック兼判定枠） */
+    /* CSSによる鍵盤の描画（画像がない場合のフォールバック兼判定枠） */
     .piano-keys {
       position: relative;
       display: flex;
+      width: 100%;
       height: 100%;
       background: #ffffff;
       border: 4px solid #333;
@@ -183,17 +182,22 @@
 
     .draggable-item:active {
       cursor: grabbing;
-      transform: scale(1.15);
     }
 
     .draggable-item img {
       width: 100%;
       height: 100%;
       object-fit: contain;
-      pointer-events: none; /* タッチイベントの邪魔にならないように設定 */
+      pointer-events: none;
     }
 
-    /* 画像がない場合のフォールバック用イラスト（CSS描画） */
+    /* 斜めのお団子をプログラムで真横に回転させるCSS */
+    /* ※もし回転角度が足りない、または回りすぎている場合は「-45deg」の数字を増減してください */
+    .rotate-dango img {
+      transform: rotate(-45deg);
+    }
+
+    /* 画像がない場合のフォールバック用イラスト */
     .fallback-icon {
       width: 100%;
       height: 100%;
@@ -205,11 +209,11 @@
 
     /* スナップバック（元の位置に戻る）アニメーション */
     .snap-returning {
-      transition: left 0.3s ease-out, top 0.3s ease-out !important;
+      transition: transform 0.3s ease-out !important;
     }
 
     /* =========================================================
-       ステージ3：ごほうび画面（画面いっぱいの演出）
+       ステージ3：ごほうび画面
        ========================================================= */
     #reward-screen {
       position: fixed;
@@ -287,7 +291,6 @@
     <!-- ドラッグ素材のスタートエリア -->
     <div class="drag-start-zone" id="drag-zone">
       <div id="draggable" class="draggable-item">
-        <!-- 画像タグ (フォールバック処理付き) -->
         <img id="item-img" src="sakuranbo.png" alt="イラスト" onerror="this.style.display='none'; document.getElementById('fallback-icon').style.display='flex';">
         <div id="fallback-icon" class="fallback-icon" style="display: none;">🍒</div>
       </div>
@@ -305,28 +308,23 @@
     /* =========================================================
        1. ゲームの基本設定・状態変数
        ========================================================= */
-    let currentStage = 1; // 1: さくらんぼ (黒鍵2本), 2: 串団子 (黒鍵3本), 3: クリア画面
-    let successCount = 0; // 現在のクリア回数 (0〜3)
+    let currentStage = 1; 
+    let successCount = 0; 
 
-    // ドラッグ＆ドロップの位置保持変数
     let startX = 0, startY = 0;
-    let initialLeft = 0, initialTop = 0;
+    let currentX = 0, currentY = 0;
     let isDragging = false;
 
-    /* 調整用変数：当たり判定（判定範囲）の余裕ピクセル数
-       ※数値を大きくすると、少し離れた位置にドロップしても「正解」になりやすくなります。 */
-    const HIT_MARGIN = 30; // 単位: px
+    const HIT_MARGIN = 40; // 当たり判定の余裕度(px)
 
-    // DOM要素の参照
     const draggable = document.getElementById('draggable');
     const itemImg = document.getElementById('item-img');
     const fallbackIcon = document.getElementById('fallback-icon');
     const keyboardArea = document.getElementById('keyboard-area');
-    const dragZone = document.getElementById('drag-zone');
     const rewardScreen = document.getElementById('reward-screen');
 
     /* =========================================================
-       2. Web Audio API による音源作成（外部音声ファイル不要）
+       2. Web Audio API による音源作成
        ========================================================= */
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     let audioCtx = null;
@@ -340,12 +338,10 @@
       }
     }
 
-    // 正解音：「ピンポン！」
     function playDingDong() {
       initAudio();
       const now = audioCtx.currentTime;
 
-      // 「ピン」（高音: E6）
       const osc1 = audioCtx.createOscillator();
       const gain1 = audioCtx.createGain();
       osc1.type = 'sine';
@@ -357,7 +353,6 @@
       osc1.start(now);
       osc1.stop(now + 0.4);
 
-      // 「ポン」（低音: C6）
       const osc2 = audioCtx.createOscillator();
       const gain2 = audioCtx.createGain();
       osc2.type = 'sine';
@@ -370,308 +365,10 @@
       osc2.stop(now + 0.7);
     }
 
-    // ステージクリア音：「ファンファーレ！」
     function playFanfare() {
       initAudio();
       const now = audioCtx.currentTime;
-      const notes = [523.25, 659.25, 783.99, 1046.50]; // ド・ミ・ソ・ド
+      const notes = [523.25, 659.25, 783.99, 1046.50];
 
       notes.forEach((freq, idx) => {
         const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(freq, now + idx * 0.12);
-        
-        const duration = (idx === notes.length - 1) ? 0.6 : 0.12;
-        gain.gain.setValueAtTime(0.3, now + idx * 0.12);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.12 + duration);
-        
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start(now + idx * 0.12);
-        osc.stop(now + idx * 0.12 + duration);
-      });
-    }
-
-    // 全クリア音：「ジャジャーン！」
-    function playGrandTaDa() {
-      initAudio();
-      const now = audioCtx.currentTime;
-      const chord = [261.63, 329.63, 392.00, 523.25, 659.25, 783.99, 1046.50];
-
-      chord.forEach((freq) => {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, now);
-        gain.gain.setValueAtTime(0.15, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 2.0);
-        
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start(now);
-        osc.stop(now + 2.0);
-      });
-    }
-
-    /* =========================================================
-       3. ステージ描画＆切替処理
-       ========================================================= */
-    function loadStage(stageNum) {
-      currentStage = stageNum;
-      successCount = 0;
-      updateStars();
-
-      if (stageNum === 1) {
-        // --- ステージ1：ドレミ（黒鍵2本・さくらんぼ） ---
-        itemImg.src = "sakuranbo.png";
-        fallbackIcon.textContent = "🍒";
-        
-        keyboardArea.innerHTML = `
-          <div class="piano-keys stage-1-keys">
-            <div class="white-key"></div>
-            <div class="white-key"></div>
-            <div class="white-key"></div>
-            <div class="target-black-keys stage-1-target highlight" id="target-area">
-              <div class="black-key-single"></div>
-              <div class="black-key-single"></div>
-            </div>
-          </div>
-        `;
-      } else if (stageNum === 2) {
-        // --- ステージ2：ファソラシ（黒鍵3本・串団子） ---
-        itemImg.src = "kushidango.png";
-        fallbackIcon.textContent = "🍡";
-
-        keyboardArea.innerHTML = `
-          <div class="piano-keys stage-2-keys">
-            <div class="white-key"></div>
-            <div class="white-key"></div>
-            <div class="white-key"></div>
-            <div class="white-key"></div>
-            <div class="target-black-keys stage-2-target highlight" id="target-area">
-              <div class="black-key-single"></div>
-              <div class="black-key-single"></div>
-              <div class="black-key-single"></div>
-            </div>
-          </div>
-        `;
-      } else if (stageNum === 3) {
-        // --- ステージ3：ごほうび画面 ---
-        showRewardScreen();
-        return;
-      }
-
-      // 画像エラー時の再セット
-      itemImg.style.display = 'block';
-      fallbackIcon.style.display = 'none';
-
-      resetDraggablePosition();
-    }
-
-    // ★マークの更新
-    function updateStars() {
-      for (let i = 1; i <= 3; i++) {
-        const star = document.getElementById(`star-${i}`);
-        if (i <= successCount) {
-          star.classList.add('active');
-        } else {
-          star.classList.remove('active');
-        }
-      }
-    }
-
-    // ドラッグアイテムをスタート位置に配置
-    function resetDraggablePosition() {
-      draggable.classList.remove('snap-returning');
-      draggable.style.left = '0px';
-      draggable.style.top = '0px';
-      draggable.style.transform = 'translate(0px, 0px)';
-    }
-
-    /* =========================================================
-       4. タッチ＆マウス操作（ドラッグ＆ドロップ実装）
-       ========================================================= */
-    let currentX = 0, currentY = 0;
-
-    // ドラッグ開始
-    function onDragStart(e) {
-      initAudio(); // 音響の初期化（ユーザー操作を起点にする必要があるため）
-      if (isDragging) return;
-
-      isDragging = true;
-      draggable.classList.remove('snap-returning');
-
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-
-      startX = clientX - currentX;
-      startY = clientY - currentY;
-    }
-
-    // ドラッグ中
-    function onDragMove(e) {
-      if (!isDragging) return;
-      e.preventDefault(); // スクロール等の標準動作を防止
-
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-
-      currentX = clientX - startX;
-      currentY = clientY - startY;
-
-      draggable.style.transform = `translate(${currentX}px, ${currentY}px)`;
-    }
-
-    // ドラッグ終了（当たり判定の評価）
-    function onDragEnd() {
-      if (!isDragging) return;
-      isDragging = false;
-
-      // 正解エリアとドラッグアイテムの座標を取得
-      const targetArea = document.getElementById('target-area');
-      if (!targetArea) return;
-
-      const itemRect = draggable.getBoundingClientRect();
-      const targetRect = targetArea.getBoundingClientRect();
-
-      // アイテムの中心点を計算
-      const itemCenterX = itemRect.left + itemRect.width / 2;
-      const itemCenterY = itemRect.top + itemRect.height / 2;
-
-      /* =========================================================
-         正解の判定（重なり検知）
-         ※HIT_MARGINで許容範囲（広さ）を調整しています。
-         ========================================================= */
-      const isInside = 
-        itemCenterX >= (targetRect.left - HIT_MARGIN) &&
-        itemCenterX <= (targetRect.right + HIT_MARGIN) &&
-        itemCenterY >= (targetRect.top - HIT_MARGIN) &&
-        itemCenterY <= (targetRect.bottom + HIT_MARGIN);
-
-      if (isInside) {
-        // --- 正解の場合 ---
-        playDingDong();
-        successCount++;
-        updateStars();
-
-        // 位置を元に戻す
-        currentX = 0;
-        currentY = 0;
-        resetDraggablePosition();
-
-        // 3回正解したら次のステージへ
-        if (successCount >= 3) {
-          setTimeout(() => {
-            playFanfare();
-            setTimeout(() => {
-              loadStage(currentStage + 1);
-            }, 800);
-          }, 300);
-        }
-      } else {
-        // --- 不正解（外れた）場合 ---
-        // 音は鳴らさずに、スッと元の位置に戻る
-        draggable.classList.add('snap-returning');
-        currentX = 0;
-        currentY = 0;
-        draggable.style.transform = `translate(0px, 0px)`;
-      }
-    }
-
-    // イベントリスナーの登録（タッチ＆マウス対応）
-    draggable.addEventListener('touchstart', onDragStart, { passive: false });
-    window.addEventListener('touchmove', onDragMove, { passive: false });
-    window.addEventListener('touchend', onDragEnd);
-
-    draggable.addEventListener('mousedown', onDragStart);
-    window.addEventListener('mousemove', onDragMove);
-    window.addEventListener('mouseup', onDragEnd);
-
-    /* =========================================================
-       5. ステージ3：ごほうび画面 & 紙吹雪アニメーション
-       ========================================================= */
-    function showRewardScreen() {
-      rewardScreen.style.display = 'flex';
-      playGrandTaDa();
-      startConfetti();
-    }
-
-    // タッチで最初（ステージ1）に戻るループ設定
-    rewardScreen.addEventListener('click', () => {
-      rewardScreen.style.display = 'none';
-      stopConfetti();
-      loadStage(1);
-    });
-
-    // 紙吹雪（紙吹雪＆星のアニメーション）
-    const canvas = document.getElementById('reward-canvas');
-    const ctx = canvas.getContext('2d');
-    let confettiParticles = [];
-    let animationFrameId = null;
-
-    function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }
-    window.addEventListener('resize', resizeCanvas);
-
-    function startConfetti() {
-      resizeCanvas();
-      confettiParticles = [];
-      const colors = ['#f43f5e', '#0ea5e9', '#eab308', '#22c55e', '#a855f7', '#ec4899'];
-
-      for (let i = 0; i < 100; i++) {
-        confettiParticles.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height - canvas.height,
-          size: Math.random() * 12 + 8,
-          color: colors[Math.floor(Math.random() * colors.length)],
-          vy: Math.random() * 3 + 2,
-          vx: Math.random() * 2 - 1,
-          rotation: Math.random() * 360,
-          rotSpeed: Math.random() * 4 - 2
-        });
-      }
-      animateConfetti();
-    }
-
-    function animateConfetti() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      confettiParticles.forEach((p) => {
-        p.y += p.vy;
-        p.x += p.vx;
-        p.rotation += p.rotSpeed;
-
-        if (p.y > canvas.height) {
-          p.y = -20;
-          p.x = Math.random() * canvas.width;
-        }
-
-        ctx.save();
-        ctx.translate(p.x, p.y);
-        ctx.rotate((p.rotation * Math.PI) / 180);
-        ctx.fillStyle = p.color;
-        ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
-        ctx.restore();
-      });
-
-      animationFrameId = requestAnimationFrame(animateConfetti);
-    }
-
-    function stopConfetti() {
-      if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId);
-      }
-    }
-
-    /* =========================================================
-       6. ゲーム開始（初期化）
-       ========================================================= */
-    window.onload = () => {
-      loadStage(1);
-    };
-  </script>
-</body>
-</html>
