@@ -79,28 +79,31 @@
     }
 
     .start-card {
-      background: rgba(255, 255, 255, 0.92);
-      padding: 2rem 3.5rem;
-      border-radius: 32px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      background: rgba(255, 255, 255, 0.94);
+      padding: 2.5rem 2rem;
+      border-radius: 36px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.12);
       border: 4px solid #fbbf24;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 1.5rem;
-      max-width: 85%;
+      gap: 1.8rem;
+      max-width: 90%;
+      width: auto;
     }
 
+    /* 端末画面幅に合わせて綺麗に1行で収まるレスポンシブタイトル */
     .start-title {
-      font-size: 2.4rem;
+      font-size: clamp(1.6rem, 5.5vw, 2.6rem);
       color: #d97706;
       font-weight: bold;
       text-shadow: 1px 1px 0px white;
+      white-space: nowrap; /* 途中で不自然に折り返さない */
     }
 
     .btn-tonton {
-      font-size: 2rem;
-      padding: 1rem 3.5rem;
+      font-size: clamp(1.5rem, 5vw, 2.2rem);
+      padding: 0.9rem 3rem;
       border-radius: 50px;
       background: linear-gradient(180deg, #f43f5e 0%, #e11d48 100%);
       color: white;
@@ -109,15 +112,16 @@
       box-shadow: 0 8px 20px rgba(225, 29, 72, 0.4);
       animation: pulse 1.8s infinite;
       cursor: pointer;
+      white-space: nowrap;
     }
 
     @keyframes pulse {
       0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.06); }
+      50% { transform: scale(1.05); }
     }
 
     /* =========================================================
-       3. メインゲーム画面（横画面優先レイアウト）
+       3. メインゲーム画面（レイアウト）
        ========================================================= */
     #screen-game {
       display: none;
@@ -134,9 +138,9 @@
       display: flex;
     }
 
-    /* --- 左エリア：素材エリア --- */
+    /* --- 左エリア：ドラッグ元 --- */
     .game-sidebar-left {
-      width: 22%;
+      width: 24%;
       height: 100%;
       display: flex;
       flex-direction: column;
@@ -146,17 +150,18 @@
     }
 
     .source-box {
-      width: 130px;
-      height: 130px;
-      background: rgba(255, 255, 255, 0.7);
+      width: 160px;
+      height: 160px;
+      background: rgba(255, 255, 255, 0.75);
       border: 3px dashed #38bdf8;
-      border-radius: 24px;
+      border-radius: 28px;
       display: flex;
       justify-content: center;
       align-items: center;
       position: relative;
     }
 
+    /* ドラッグ要素（ステージ1: 110px / ステージ2: 175px 大迫力サイズ） */
     #draggable {
       width: 110px;
       height: 110px;
@@ -167,6 +172,11 @@
       display: flex;
       justify-content: center;
       align-items: center;
+    }
+
+    #draggable.stage2-size {
+      width: 175px;  /* 黒鍵3本にぴったりの大迫力サイズ */
+      height: 175px;
     }
 
     #draggable:active {
@@ -190,18 +200,40 @@
       height: 100%;
       object-fit: contain;
       pointer-events: none;
-      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+      filter: drop-shadow(0 4px 10px rgba(0,0,0,0.22));
+      transition: transform 0s; /* 不自然な回転補正アニメーションを即座にカット */
     }
 
     .emoji-fallback {
-      font-size: 75px;
+      font-size: 80px;
       line-height: 1;
       display: none;
     }
 
-    /* --- 中央エリア：鍵盤グラフィック --- */
+    /* --- お団子の回転統一ロジック ---
+       iPad（横画面）：最初から最後までずーっと「真横（三の字）」
+       iPhone（縦画面）：最初から最後までずーっと「縦向き（川の字）」
+    */
+    .is-dango {
+      transform: rotate(90deg); /* iPad（横画面）標準：真横 */
+    }
+
+    .tray-item-dango {
+      transform: rotate(90deg); /* iPad（横画面）標準：お皿でも真横 */
+    }
+
+    @media (orientation: portrait) {
+      .is-dango {
+        transform: rotate(0deg) !important; /* iPhone（縦画面）：常に縦向き */
+      }
+      .tray-item-dango {
+        transform: rotate(0deg) !important;
+      }
+    }
+
+    /* --- 中央エリア：鍵盤 --- */
     .game-center {
-      width: 52%;
+      width: 50%;
       height: 100%;
       display: flex;
       justify-content: center;
@@ -245,7 +277,7 @@
       margin: 0 2px;
     }
 
-    /* --- 黒鍵ターゲット判定エリア（完全透明化＆厳格判定） --- */
+    /* --- 黒鍵ターゲット判定エリア --- */
     .black-keys-target {
       position: absolute;
       top: 8px;
@@ -262,13 +294,13 @@
     .stage1-target {
       left: 85px;
       width: 100px;
-      height: 130px;
+      height: 125px;
     }
 
     .stage2-target {
-      left: 155px;
-      width: 150px;
-      height: 130px;
+      left: 150px;
+      width: 160px;
+      height: 125px;
     }
 
     .black-key {
@@ -282,24 +314,24 @@
       opacity: 0;
     }
 
-    /* 画像読み込み時の透明判定領域の位置バランス */
+    /* カスタム画像読み込み時の黒鍵ぴったり位置指定 */
     #keyboard-wrapper.has-custom-bg .stage1-target {
       top: 12%;
       left: 36%;
       width: 28%;
-      height: 48%;
+      height: 45%;
     }
 
     #keyboard-wrapper.has-custom-bg .stage2-target {
       top: 12%;
-      left: 32%;
-      width: 36%;
-      height: 48%;
+      left: 30%;
+      width: 40%;
+      height: 45%;
     }
 
     /* --- 右エリア：ごほうびトレイ（お皿） --- */
     .game-sidebar-right {
-      width: 22%;
+      width: 24%;
       height: 100%;
       display: flex;
       flex-direction: column;
@@ -308,9 +340,9 @@
     }
 
     .tray-container {
-      width: 140px;
-      height: 250px;
-      background: rgba(255, 255, 255, 0.88);
+      width: 150px;
+      height: 260px;
+      background: rgba(255, 255, 255, 0.9);
       border: 4px solid #f59e0b;
       border-radius: 30px;
       box-shadow: 0 8px 20px rgba(0,0,0,0.08);
@@ -322,7 +354,7 @@
     }
 
     .tray-title {
-      font-size: 0.95rem;
+      font-size: 1rem;
       font-weight: bold;
       color: #d97706;
       margin-bottom: 2px;
@@ -332,21 +364,16 @@
       width: 100%;
       height: 100%;
       display: flex;
-      flex-direction: column; /* 横画面（iPad）時は縦並び */
+      flex-direction: column; /* 横画面（iPad）時は「三」の字に縦並び */
       justify-content: space-around;
       align-items: center;
     }
 
     .tray-item {
-      width: 60px;
-      height: 60px;
+      width: 65px;
+      height: 65px;
       object-fit: contain;
       animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-
-    /* iPad（横画面）時：お団子を横向き「三」にして綺麗に並べる */
-    .tray-item-dango {
-      transform: rotate(90deg);
     }
 
     @keyframes popIn {
@@ -376,20 +403,22 @@
     .reward-content {
       position: relative;
       z-index: 32;
-      background: rgba(255, 255, 255, 0.92);
-      padding: 2.5rem 4rem;
+      background: rgba(255, 255, 255, 0.94);
+      padding: 2.5rem 3.5rem;
       border-radius: 40px;
       box-shadow: 0 15px 35px rgba(0,0,0,0.15);
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 1.2rem;
+      max-width: 90%;
     }
 
     .reward-title {
-      font-size: 2.8rem;
+      font-size: clamp(1.8rem, 6vw, 2.8rem);
       color: #e11d48;
       font-weight: bold;
+      white-space: nowrap;
     }
 
     .reward-emoji {
@@ -403,8 +432,8 @@
     }
 
     .btn-replay {
-      font-size: 1.5rem;
-      padding: 0.8rem 2.5rem;
+      font-size: clamp(1.2rem, 4vw, 1.6rem);
+      padding: 0.8rem 2.8rem;
       border-radius: 40px;
       background: #10b981;
       color: white;
@@ -412,10 +441,11 @@
       border: none;
       box-shadow: 0 6px 15px rgba(16, 185, 129, 0.4);
       cursor: pointer;
+      white-space: nowrap;
     }
 
     /* =========================================================
-       5. 縦画面（iPhone等）時のレスポンシブ表示調整
+       5. 縦画面（iPhone等）でのレスポンシブ配置
        ========================================================= */
     @media (orientation: portrait) {
       #screen-game {
@@ -429,19 +459,19 @@
         height: auto;
       }
 
+      .source-box {
+        width: 140px;
+        height: 140px;
+      }
+
       .tray-container {
-        width: 280px;
-        height: 100px;
+        width: 290px;
+        height: 110px;
         flex-direction: column;
       }
 
       #tray-area {
-        flex-direction: row; /* 縦画面時は横一列に並べる */
-      }
-
-      /* iPhone（縦画面）時：お団子を縦向き「川」にして綺麗に並べる */
-      .tray-item-dango {
-        transform: rotate(0deg);
+        flex-direction: row; /* 縦画面（iPhone）時は横一列「川」に並べる */
       }
     }
   </style>
@@ -459,7 +489,7 @@
     </div>
   </section>
 
-  <!-- 2. メインゲーム画面（完全一本道フロー） -->
+  <!-- 2. メインゲーム画面 -->
   <section id="screen-game" class="screen">
     <!-- 左：ドラッグ元 -->
     <div class="game-sidebar-left">
@@ -500,8 +530,8 @@
   </section>
 
   <!-- =========================================================
-     JavaScript（動作制御・音声案内・厳格な黒鍵判定・一本道処理）
-     ========================================================= */ -->
+     JavaScript（動作制御・音声・黒鍵直上判定・状態管理）
+     ========================================================= -->
   <script>
     /* 1. 画像探査リスト */
     const FILES_STAGE1_BG = ["kenban1.png", "Kenban1.png", "kenban1.PNG", "Kenban1.PNG", "KENBAN1.PNG", "kenban1.jpg", "Kenban1.jpg"];
@@ -520,7 +550,7 @@
     let startX = 0, startY = 0;
     let currentX = 0, currentY = 0;
 
-    /* DOM要素の取得 */
+    /* DOM要素取得 */
     const screenStart = document.getElementById('screen-start');
     const screenGame = document.getElementById('screen-game');
     const screenReward = document.getElementById('screen-reward');
@@ -722,6 +752,9 @@
 
       if (stageNum === 1) {
         // ステージ1：さくらんぼ
+        draggable.classList.remove('stage2-size');
+        itemImg.classList.remove('is-dango');
+
         setKeyboardBackgroundWithFallback(FILES_STAGE1_BG);
         loadImageWithFallback(itemImg, FILES_SAKURANBO, "🍒", path => {
           loadedPathSakuranbo = path;
@@ -743,7 +776,10 @@
         speakGuide("さくらんぼを くろい けんばんの上に おいてね");
 
       } else if (stageNum === 2) {
-        // ステージ2：お団子
+        // ステージ2：お団子（大迫力サイズ & 向き固定適用）
+        draggable.classList.add('stage2-size');
+        itemImg.classList.add('is-dango');
+
         setKeyboardBackgroundWithFallback(FILES_STAGE2_BG);
         loadImageWithFallback(itemImg, FILES_KUSHIDANGO, "🍡", path => {
           loadedPathKushidango = path;
@@ -783,7 +819,7 @@
       trayArea.appendChild(trayImg);
     }
 
-    /* 7. ドラッグ＆ドロップおよび【厳格な黒鍵判定】 */
+    /* 7. ドラッグ＆ドロップおよび【黒鍵直上限定の厳格判定】 */
     function getEventPos(e) {
       if (e.touches && e.touches.length > 0) {
         return { x: e.touches[0].clientX, y: e.touches[0].clientY };
@@ -826,19 +862,20 @@
       const itemRect = draggable.getBoundingClientRect();
       const targetRect = targetArea.getBoundingClientRect();
 
-      // 移動中の素材の中心点
+      // 指で運んできたイラストの中心座標
       const itemCenterX = itemRect.left + itemRect.width / 2;
       const itemCenterY = itemRect.top + itemRect.height / 2;
 
       /* =========================================================
-         【厳格な黒鍵判定ロジック】
-         ・左右の許容幅（MARGIN_X）：20px
-         ・上の許容幅（MARGIN_Y_TOP）：15px
-         ・下の許容幅（MARGIN_Y_BOTTOM）：5px（※白鍵への判定を完全にカット！）
+         【黒鍵の真上だけを判定する厳格ロジック】
+         ・左右（MARGIN_X）：少しの遊び（15px）
+         ・上方向（MARGIN_Y_TOP）：黒鍵の上側領域（10px）
+         ・下方向（MARGIN_Y_BOTTOM）：★マイナス10px★
+           （黒鍵の下端を超える＝白い部分に触れた瞬間即アウト！）
          ========================================================= */
-      const MARGIN_X = 20;
-      const MARGIN_Y_TOP = 15;
-      const MARGIN_Y_BOTTOM = 5; // 黒鍵の下端を超えて白鍵に落ちた場合は不正解
+      const MARGIN_X = 15;
+      const MARGIN_Y_TOP = 10;
+      const MARGIN_Y_BOTTOM = -10; // 白鍵への食い出しを厳格にカット
 
       const isHit =
         itemCenterX >= (targetRect.left - MARGIN_X) &&
@@ -858,12 +895,10 @@
             playFanfare();
 
             if (currentStage === 1) {
-              // ステージ1クリア → 自動的にステージ2（お団子）へ
               setTimeout(() => {
                 startStage(2);
               }, 1200);
             } else if (currentStage === 2) {
-              // ステージ2クリア → 全クリア画面へ
               setTimeout(() => {
                 showRewardScreen();
               }, 1200);
@@ -878,7 +913,7 @@
         }
 
       } else {
-        // 不正解（白鍵の上や外れた場所）：元の位置へスッと戻る
+        // 不正解（白鍵の上や外れた場所）：即座に元の位置へスッと戻る
         draggable.classList.add('snap-back');
         currentX = 0;
         currentY = 0;
@@ -893,7 +928,7 @@
       draggable.style.transform = 'translate3d(0px, 0px, 0px)';
     }
 
-    /* イベント登録 */
+    /* イベントリスナー登録 */
     draggable.addEventListener('touchstart', handleDragStart, { passive: false });
     window.addEventListener('touchmove', handleDragMove, { passive: false });
     window.addEventListener('touchend', handleDragEnd, { passive: false });
