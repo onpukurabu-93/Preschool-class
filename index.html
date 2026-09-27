@@ -2,9 +2,9 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <!-- スマホ・タブレットの画面固定とズーム・スクロール禁止設定 -->
+  <!-- iPad / スマホ全画面最適化（バウンス・拡大縮小・スクロールを完全防止） -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>ピアノ知育ミニゲーム</title>
+  <title>ピアノ知育ミニゲーム - さくらんぼ＆お団子</title>
   <style>
     /* =========================================================
        1. 基本スタイル＆全画面リセット (iPad最適化)
@@ -20,59 +20,223 @@
     }
 
     html, body {
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background: #f0f9ff;
-      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Segoe UI", sans-serif;
-      touch-action: none; /* iPad Safariでの画面バウンス・スクロールを強力に禁止 */
-    }
-
-    #game-container {
-      position: relative;
       width: 100vw;
       height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      align-items: center;
-      padding: 20px 0;
-      box-sizing: border-box;
+      overflow: hidden;
+      background: #e0f2fe; /* 優しい水色背景 */
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", "メイリオ", sans-serif;
+      touch-action: none; /* iPad Safariでの全操作スクロールを強力防止 */
     }
 
-    /* =========================================================
-       2. 進捗表示（★マーク）
-       ========================================================= */
-    .progress-bar {
-      display: flex;
-      gap: 20px;
-      margin-top: 10px;
+    /* 画面切り替え用のコンテナ共通定義 */
+    .screen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      display: none; /* JSで flex に切り替えて画面遷移 */
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
       z-index: 10;
     }
 
-    .star {
-      width: 50px;
-      height: 50px;
-      background: #cbd5e1;
-      clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
-      transition: background 0.3s ease, transform 0.3s ease;
-    }
-
-    .star.active {
-      background: #facc15;
-      transform: scale(1.25);
+    .screen.active {
+      display: flex;
     }
 
     /* =========================================================
-       3. 鍵盤表示エリア
-          （画像がある場合は画像をクッキリ表示、ない場合はCSSで描画）
+       2. 画面1：トントン画面（スタート時の音声ロック解除）
        ========================================================= */
+    #screen-start {
+      background: linear-gradient(135deg, #bae6fd 0%, #fef3c7 100%);
+    }
+
+    .start-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 30px;
+    }
+
+    .start-title {
+      font-size: 36px;
+      font-weight: bold;
+      color: #0284c7;
+      text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.8);
+      text-align: center;
+    }
+
+    /* 幼児がひと目で押したくなる巨大トントンボタン */
+    .tonton-button {
+      width: 220px;
+      height: 220px;
+      background: linear-gradient(145deg, #ff6b81, #ff4757);
+      border-radius: 50%;
+      border: 8px solid #ffffff;
+      box-shadow: 0 15px 35px rgba(255, 71, 87, 0.4), inset 0 8px 15px rgba(255, 255, 255, 0.4);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      animation: pulse-tonton 1.8s infinite ease-in-out;
+    }
+
+    .tonton-icon {
+      font-size: 70px;
+      margin-bottom: 5px;
+    }
+
+    .tonton-text {
+      font-size: 26px;
+      font-weight: bold;
+      color: #ffffff;
+      text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+    }
+
+    @keyframes pulse-tonton {
+      0% { transform: scale(0.95); box-shadow: 0 10px 25px rgba(255, 71, 87, 0.4); }
+      50% { transform: scale(1.08); box-shadow: 0 20px 45px rgba(255, 71, 87, 0.6); }
+      100% { transform: scale(0.95); box-shadow: 0 10px 25px rgba(255, 71, 87, 0.4); }
+    }
+
+    /* =========================================================
+       3. 画面2：すごろくマップ画面（一本道＆影絵シルエット）
+       ========================================================= */
+    #screen-map {
+      background: #f0fdf4; /* 優しい緑の野原イメージ */
+      position: relative;
+    }
+
+    .map-container {
+      position: relative;
+      width: 90vw;
+      max-width: 750px;
+      height: 70vh;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+    }
+
+    /* コマをつなぐ点線ルート */
+    .map-path-line {
+      position: absolute;
+      top: 50%;
+      left: 15%;
+      width: 70%;
+      height: 12px;
+      background: repeating-linear-gradient(90deg, #cbd5e1, #cbd5e1 15px, transparent 15px, transparent 30px);
+      border-radius: 6px;
+      z-index: 1;
+      transform: translateY(-50%);
+    }
+
+    /* クリア後に光るアクティブな道 */
+    .map-path-line.unlocked {
+      background: linear-gradient(90deg, #4ade80, #38bdf8);
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.6);
+    }
+
+    /* すごろくの各コマ（ノード） */
+    .map-node {
+      position: relative;
+      width: 140px;
+      height: 140px;
+      background: #ffffff;
+      border-radius: 30px;
+      border: 6px solid #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 2;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+      cursor: pointer;
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* コマ内の画像・影絵表示 */
+    .map-node-img {
+      width: 85px;
+      height: 85px;
+      object-fit: contain;
+      transition: filter 0.4s ease, transform 0.3s ease;
+    }
+
+    /* 未解放（影絵・シルエット）のスタイル（案②） */
+    .map-node.locked {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+      cursor: not-allowed;
+    }
+
+    .map-node.locked .map-node-img {
+      filter: brightness(0) opacity(0.25); /* 影絵シルエット化 */
+    }
+
+    /* 解放済み・挑戦可能なコマのスタイル */
+    .map-node.active {
+      border-color: #38bdf8;
+      box-shadow: 0 12px 30px rgba(56, 189, 248, 0.35);
+      animation: bounce-node 1.5s infinite alternate;
+    }
+
+    @keyframes bounce-node {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-10px); }
+    }
+
+    /* クリア済みのコマ */
+    .map-node.cleared {
+      border-color: #4ade80;
+      background: #f0fdf4;
+    }
+
+    .map-node.cleared::after {
+      content: "🌸";
+      position: absolute;
+      top: -12px;
+      right: -12px;
+      font-size: 36px;
+    }
+
+    /* =========================================================
+       4. 画面3：ゲーム画面（大迫力鍵盤＆お皿ごほうびトレイ）
+       ========================================================= */
+    #screen-game {
+      background: #f0f9ff;
+      justify-content: space-between;
+      padding: 25px 0;
+    }
+
+    /* 戻るボタン（マップへ戻る） */
+    .btn-back-map {
+      position: absolute;
+      top: 15px;
+      left: 20px;
+      width: 55px;
+      height: 55px;
+      background: #ffffff;
+      border: 3px solid #cbd5e1;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 28px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      cursor: pointer;
+      z-index: 100;
+    }
+
+    /* 大迫力 鍵盤エリア */
     .keyboard-wrapper {
       position: relative;
-      width: 88vw;
-      max-width: 650px;
-      height: 240px;
-      margin-top: 10px;
+      width: 92vw;
+      max-width: 780px;
+      height: 260px;
+      margin-top: 40px;
       background-size: contain;
       background-repeat: no-repeat;
       background-position: center;
@@ -81,7 +245,7 @@
       align-items: flex-start;
     }
 
-    /* 画像が正しく読み込めた場合、背景画像が隠れないようCSSの土台を透明化 */
+    /* 画像読み込み成功時：CSS鍵盤の背景を透明化して画像を見せる */
     .keyboard-wrapper.has-custom-bg .piano-keyboard {
       background: transparent !important;
       border: none !important;
@@ -89,24 +253,20 @@
     }
 
     .keyboard-wrapper.has-custom-bg .white-key {
-      opacity: 0 !important; /* 背景画像を見せるため白鍵を透明化 */
+      opacity: 0 !important;
     }
 
-    /* 鍵盤の土台（白鍵群） */
     .piano-keyboard {
       position: relative;
       width: 100%;
       height: 100%;
       display: flex;
       background: #1e293b;
-      border: 5px solid #0f172a;
-      border-radius: 0 0 16px 16px;
-      box-shadow: 0 12px 30px rgba(0,0,0,0.25);
-      overflow: visible;
-      transition: background 0.2s ease;
+      border: 6px solid #0f172a;
+      border-radius: 0 0 18px 18px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.25);
     }
 
-    /* 白鍵スタイル */
     .white-key {
       flex: 1;
       height: 100%;
@@ -114,10 +274,9 @@
       border: 2px solid #cbd5e1;
       border-top: none;
       border-radius: 0 0 10px 10px;
-      box-shadow: inset 0 -5px 10px rgba(0,0,0,0.05);
     }
 
-    /* 黒鍵ターゲットエリア（当たり判定枠 兼 黒鍵ビジュアル） */
+    /* 黒鍵ターゲット枠 */
     .black-keys-target {
       position: absolute;
       top: 0;
@@ -131,34 +290,22 @@
       z-index: 5;
     }
 
-    /* 画像背景がある場合、黒鍵ターゲットを少し見やすく透過ブレンド */
     .keyboard-wrapper.has-custom-bg .black-keys-target {
-      background: rgba(15, 23, 42, 0.85);
+      background: rgba(15, 23, 42, 0.82);
     }
 
-    /* ステージ1（ドレミ）：白鍵3枚、中央寄りに黒鍵2本 */
-    .stage1-target {
-      left: 16.66%;
-      width: 66.66%;
-    }
+    .stage1-target { left: 16.66%; width: 66.66%; }
+    .stage2-target { left: 12.5%; width: 75%; }
 
-    /* ステージ2（ファソラシ）：白鍵4枚、中央寄りに黒鍵3本 */
-    .stage2-target {
-      left: 12.5%;
-      width: 75%;
-    }
-
-    /* 個別の黒鍵表示 */
     .black-key {
       width: 28%;
       height: 100%;
       background: linear-gradient(to bottom, #334155 0%, #0f172a 100%);
       border-radius: 0 0 6px 6px;
       border: 1px solid #475569;
-      box-shadow: inset 0 -3px 6px rgba(255,255,255,0.1);
     }
 
-    /* 正解エリアをわかりやすく光らせるアニメーションガイド */
+    /* 光るターゲットガイド */
     .target-highlight {
       outline: 5px dashed #22c55e;
       outline-offset: 4px;
@@ -167,28 +314,24 @@
 
     @keyframes pulse-glow {
       0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
-      70% { box-shadow: 0 0 0 18px rgba(34, 197, 94, 0); }
+      70% { box-shadow: 0 0 0 20px rgba(34, 197, 94, 0); }
       100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
     }
 
-    /* =========================================================
-       4. ドラッグ素材エリア（さくらんぼ・串団子）
-       ========================================================= */
+    /* ドラッグ操作エリア */
     .drag-zone {
       width: 100%;
-      height: 180px;
+      height: 170px;
       display: flex;
       justify-content: center;
       align-items: center;
-      margin-bottom: 20px;
     }
 
-    /* ドラッグ親要素（位置移動 translate3d を担当） */
     .draggable-item {
       position: relative;
       width: 140px;
       height: 140px;
-      touch-action: none; /* iOS Safariのタッチバインディング必須 */
+      touch-action: none;
       z-index: 50;
       display: flex;
       justify-content: center;
@@ -196,7 +339,6 @@
       cursor: grab;
     }
 
-    /* 画像用コンテナ（回転アニメーションを担当） */
     .image-container {
       width: 100%;
       height: 100%;
@@ -206,7 +348,7 @@
       transition: transform 0.2s ease;
     }
 
-    /* ステージ2でお団子を「真横（水平）」に90度回転させるCSS */
+    /* お団子を真横に90度回転 */
     .rotate-horizontal {
       transform: rotate(90deg);
     }
@@ -215,37 +357,57 @@
       width: 100%;
       height: 100%;
       object-fit: contain;
-      pointer-events: none; /* タッチイベントの阻害を防止 */
-    }
-
-    /* 画像読み込み失敗時の絵文字フォールバック */
-    .emoji-fallback {
-      font-size: 85px;
-      line-height: 1;
       pointer-events: none;
     }
 
-    /* アニメーション用：不正解時にスッと元の位置へ戻る */
+    .emoji-fallback {
+      font-size: 85px;
+      pointer-events: none;
+    }
+
     .snap-back {
       transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1) !important;
     }
 
+    /* ごほうびトレイ（お皿エリア：案③） */
+    .tray-area {
+      position: absolute;
+      bottom: 20px;
+      right: 25px;
+      width: 170px;
+      height: 100px;
+      background: radial-gradient(ellipse at center, #ffffff 60%, #f1f5f9 100%);
+      border: 5px solid #e2e8f0;
+      border-radius: 50px / 30px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.12), inset 0 4px 8px rgba(0,0,0,0.05);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 5px;
+      padding: 0 10px;
+    }
+
+    .tray-item {
+      width: 45px;
+      height: 45px;
+      object-fit: contain;
+      animation: pop-in-tray 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    @keyframes pop-in-tray {
+      0% { transform: scale(0) translateY(-30px); opacity: 0; }
+      100% { transform: scale(1) translateY(0); opacity: 1; }
+    }
+
     /* =========================================================
-       5. ステージ3：ごほうび画面（画面いっぱいの紙吹雪＆花丸）
+       5. 画面4：全クリア画面（くす玉パッカーン＆紙吹雪＆更新）
        ========================================================= */
-    #reward-screen {
+    #screen-reward {
+      background: rgba(255, 255, 255, 0.96);
       position: fixed;
       top: 0;
       left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(255, 255, 255, 0.96);
-      display: none;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
       z-index: 1000;
-      cursor: pointer;
     }
 
     #confetti-canvas {
@@ -257,19 +419,32 @@
       pointer-events: none;
     }
 
-    .reward-flower {
-      font-size: 160px;
-      animation: reward-pop 0.8s infinite alternate ease-in-out;
+    /* くす玉本体＆アニメーション */
+    .kusudama-container {
+      position: relative;
+      width: 240px;
+      height: 240px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
       z-index: 1001;
     }
 
-    @keyframes reward-pop {
-      0% { transform: scale(0.85) rotate(-6deg); }
-      100% { transform: scale(1.15) rotate(6deg); }
+    .kusudama-ball {
+      font-size: 160px;
+      line-height: 1;
+      animation: kusudama-open 0.8s forwards cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
+    @keyframes kusudama-open {
+      0% { transform: scale(0.3) rotate(-15deg); }
+      50% { transform: scale(1.2) rotate(10deg); }
+      100% { transform: scale(1.0) rotate(0deg); }
+    }
+
+    /* 赤い更新ボタン（↻） */
     .reset-button-icon {
-      margin-top: 30px;
+      margin-top: 40px;
       width: 90px;
       height: 90px;
       background: #ff4757;
@@ -278,13 +453,14 @@
       justify-content: center;
       align-items: center;
       color: white;
-      font-size: 45px;
-      box-shadow: 0 8px 25px rgba(255, 71, 87, 0.5);
-      animation: pulse-icon 1.2s infinite;
+      font-size: 48px;
+      box-shadow: 0 10px 25px rgba(255, 71, 87, 0.5);
+      cursor: pointer;
+      animation: pulse-reset 1.5s infinite;
       z-index: 1001;
     }
 
-    @keyframes pulse-icon {
+    @keyframes pulse-reset {
       0% { transform: scale(0.95); }
       50% { transform: scale(1.1); }
       100% { transform: scale(0.95); }
@@ -293,573 +469,679 @@
 </head>
 <body>
 
-  <div id="game-container">
-    <!-- 進捗（★）マーク -->
-    <div class="progress-bar">
-      <div class="star" id="star-1"></div>
-      <div class="star" id="star-2"></div>
-      <div class="star" id="star-3"></div>
+  <!-- =========================================================
+       1. トントン画面（音声ロック解除用）
+       ========================================================= -->
+  <div id="screen-start" class="screen active">
+    <div class="start-content">
+      <div class="start-title">ピアノであそぼう！</div>
+      <div id="btn-tonton" class="tonton-button">
+        <div class="tonton-icon">👉</div>
+        <div class="tonton-text">トントン</div>
+      </div>
     </div>
+  </div>
+
+  <!-- =========================================================
+       2. すごろくマップ画面（一本道＆影絵シルエット）
+       ========================================================= -->
+  <div id="screen-map" class="screen">
+    <div class="map-container">
+      <div id="map-path" class="map-path-line"></div>
+
+      <!-- ステージ1：さくらんぼ（最初から解放） -->
+      <div id="node-stage1" class="map-node active">
+        <img id="map-img-sakuranbo" class="map-node-img" src="" alt="さくらんぼ">
+      </div>
+
+      <!-- ステージ2：お団子（クリア前は影絵シルエット） -->
+      <div id="node-stage2" class="map-node locked">
+        <img id="map-img-kushidango" class="map-node-img" src="" alt="お団子">
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       3. ゲーム画面（鍵盤＆お皿ごほうびトレイ）
+       ========================================================= -->
+  <div id="screen-game" class="screen">
+    <!-- マップに戻るボタン -->
+    <div id="btn-back-map" class="btn-back-map">🗺️</div>
 
     <!-- 鍵盤エリア -->
     <div class="keyboard-wrapper" id="keyboard-wrapper">
-      <!-- JavaScriptでステージごとの鍵盤HTMLが挿入されます -->
+      <!-- JavaScriptで鍵盤要素を生成 -->
     </div>
 
-    <!-- ドラッグ素材の初期表示エリア -->
+    <!-- ドラッグ素材の初期エリア -->
     <div class="drag-zone">
       <div id="draggable" class="draggable-item">
         <div id="image-container" class="image-container">
-          <!-- 画像要素（多段階エラー判定で確実に読み込み） -->
           <img id="item-img" src="" alt="素材">
           <div id="emoji-fallback" class="emoji-fallback" style="display: none;">🍒</div>
         </div>
       </div>
     </div>
+
+    <!-- ごほうびトレイ（お皿） -->
+    <div class="tray-area" id="tray-area">
+      <!-- JavaScriptで正解するたびにイラストを追加 -->
+    </div>
   </div>
 
-  <!-- ステージ3：ごほうび全画面演出 -->
-  <div id="reward-screen">
+  <!-- =========================================================
+       4. 全クリア画面（くす玉＆紙吹雪＆更新ボタン）
+       ========================================================= -->
+  <div id="screen-reward" class="screen">
     <canvas id="confetti-canvas"></canvas>
-    <div class="reward-flower">💮</div>
-    <div class="reset-button-icon">↻</div>
+    <div class="kusudama-container">
+      <div class="kusudama-ball">🎊</div>
+    </div>
+    <div id="btn-reset" class="reset-button-icon">↻</div>
   </div>
 
   <script>
-    /* =========================================================
-       調整用パラメーター
-       ========================================================= */
-    const HIT_MARGIN = 45; // 単位: px
+  /* =========================================================
+     1. 画像ファイル名の全バリエーション探査リスト
+        （大文字小文字・JPG/PNG全対応：どれか1つでも存在すれば自動読み込み）
+     ========================================================= */
+  const FILES_STAGE1_BG = [
+    "kenban1.png", "Kenban1.png", "kenban1.PNG", "Kenban1.PNG", "KENBAN1.PNG",
+    "kenban1.jpg", "Kenban1.jpg", "kenban1.JPG", "Kenban1.JPG", "kenban1.jpeg"
+  ];
+  const FILES_STAGE2_BG = [
+    "kenban2.png", "Kenban2.png", "kenban2.PNG", "Kenban2.PNG", "KENBAN2.PNG",
+    "kenban2.jpg", "Kenban2.jpg", "kenban2.JPG", "Kenban2.JPG", "kenban2.jpeg"
+  ];
+  const FILES_SAKURANBO = [
+    "sakuranbo.png", "Sakuranbo.png", "sakuranbo.PNG", "Sakuranbo.PNG", "SAKURANBO.PNG",
+    "sakuranbo.jpg", "Sakuranbo.jpg", "sakuranbo.JPG", "Sakuranbo.JPG", "sakuranbo.jpeg"
+  ];
+  const FILES_KUSHIDANGO = [
+    "kushidango.png", "Kushidango.png", "kushidango.PNG", "Kushidango.PNG", "KUSHIDANGO.PNG",
+    "kushidango.jpg", "Kushidango.jpg", "kushidango.JPG", "Kushidango.JPG", "kushidango.jpeg"
+  ];
 
-    /* =========================================================
-       【強化】ファイル名・拡張子の全バリエーション探査リスト
-       大文字小文字・JPG/PNG全対応でどれか1つでも存在すれば自動読み込みします
-       ========================================================= */
-    const FILES_STAGE1_BG = [
-      "kenban1.png", "Kenban1.png", "kenban1.PNG", "Kenban1.PNG", "KENBAN1.PNG",
-      "kenban1.jpg", "Kenban1.jpg", "kenban1.JPG", "Kenban1.JPG", "kenban1.jpeg"
-    ];
-    const FILES_STAGE2_BG = [
-      "kenban2.png", "Kenban2.png", "kenban2.PNG", "Kenban2.PNG", "KENBAN2.PNG",
-      "kenban2.jpg", "Kenban2.jpg", "kenban2.JPG", "Kenban2.JPG", "kenban2.jpeg"
-    ];
-    const FILES_SAKURANBO  = [
-      "sakuranbo.png", "Sakuranbo.png", "sakuranbo.PNG", "Sakuranbo.PNG", "SAKURANBO.PNG",
-      "sakuranbo.jpg", "Sakuranbo.jpg", "sakuranbo.JPG", "Sakuranbo.JPG", "sakuranbo.jpeg"
-    ];
-    const FILES_KUSHIDANGO = [
-      "kushidango.png", "Kushidango.png", "kushidango.PNG", "Kushidango.PNG", "KUSHIDANGO.PNG",
-      "kushidango.jpg", "Kushidango.jpg", "kushidango.JPG", "Kushidango.JPG", "kushidango.jpeg"
-    ];
+  /* =========================================================
+     2. ゲーム状態管理変数
+     ========================================================= */
+  let currentStage = 1;      // 1: さくらんぼ, 2: 串団子
+  let isStage2Unlocked = false; // ステージ2の解放状態
+  let successCount = 0;      // 現在のステージでの正解数 (0〜3)
+  const HIT_MARGIN = 45;     // 当たり判定の許容幅 (px)
 
-    /* =========================================================
-       ゲーム状態管理変数
-       ========================================================= */
-    let currentStage = 1; // 1: さくらんぼ, 2: 串団子, 3: ごほうび
-    let successCount = 0; // 正解回数 (0～3)
+  // 成功した画像パスを保持（マップやトレイ表示で再利用）
+  let loadedPathSakuranbo = "";
+  let loadedPathKushidango = "";
 
-    // ドラッグ計算用変数
-    let isDragging = false;
-    let startX = 0, startY = 0;
-    let currentX = 0, currentY = 0;
+  // ドラッグ計算用変数
+  let isDragging = false;
+  let startX = 0, startY = 0;
+  let currentX = 0, currentY = 0;
 
-    // DOM要素の参照
-    const draggable = document.getElementById('draggable');
-    const imageContainer = document.getElementById('image-container');
-    const itemImg = document.getElementById('item-img');
-    const emojiFallback = document.getElementById('emoji-fallback');
-    const keyboardWrapper = document.getElementById('keyboard-wrapper');
-    const rewardScreen = document.getElementById('reward-screen');
+  // DOM要素の取得
+  const screenStart = document.getElementById('screen-start');
+  const screenMap = document.getElementById('screen-map');
+  const screenGame = document.getElementById('screen-game');
+  const screenReward = document.getElementById('screen-reward');
 
-    /* =========================================================
-       【強力画像読み込みロジック】全ファイル名探査処理
-       ========================================================= */
-    // 1. <img> タグ用：多段階フォールバック処理
-    function loadItemImageWithFallback(candidates, fallbackEmoji) {
-      let index = 0;
+  const btnTonton = document.getElementById('btn-tonton');
+  const btnBackMap = document.getElementById('btn-back-map');
+  const btnReset = document.getElementById('btn-reset');
 
-      itemImg.style.display = 'block';
-      emojiFallback.style.display = 'none';
-      emojiFallback.textContent = fallbackEmoji;
+  const nodeStage1 = document.getElementById('node-stage1');
+  const nodeStage2 = document.getElementById('node-stage2');
+  const mapPath = document.getElementById('map-path');
 
-      itemImg.onerror = function() {
-        index++;
-        if (index < candidates.length) {
-          itemImg.src = candidates[index];
-        } else {
-          // すべての拡張子・大文字小文字候補が全滅した場合のみ絵文字を表示
-          itemImg.style.display = 'none';
+  const mapImgSakuranbo = document.getElementById('map-img-sakuranbo');
+  const mapImgKushidango = document.getElementById('map-img-kushidango');
+
+  const draggable = document.getElementById('draggable');
+  const imageContainer = document.getElementById('image-container');
+  const itemImg = document.getElementById('item-img');
+  const emojiFallback = document.getElementById('emoji-fallback');
+  const keyboardWrapper = document.getElementById('keyboard-wrapper');
+  const trayArea = document.getElementById('tray-area');
+
+  /* =========================================================
+     3. 画面切り替え（セクション表示制御）
+     ========================================================= */
+  function showScreen(targetScreen) {
+    [screenStart, screenMap, screenGame, screenReward].forEach(s => s.classList.remove('active'));
+    targetScreen.classList.add('active');
+  }
+
+  /* =========================================================
+     4. 画像自動探査＆読み込みロジック
+     ========================================================= */
+  // <img> タグ用：多段階フォールバック読み込み
+  function loadImageWithFallback(imgElement, candidates, fallbackEmoji, onSuccessCallback) {
+    let index = 0;
+    imgElement.style.display = 'block';
+
+    imgElement.onerror = function() {
+      index++;
+      if (index < candidates.length) {
+        imgElement.src = candidates[index];
+      } else {
+        // すべての候補で見つからなかった場合、絵文字フォールバック
+        imgElement.style.display = 'none';
+        if (emojiFallback) {
           emojiFallback.style.display = 'block';
-        }
-      };
-
-      // 最初の候補から試行開始
-      itemImg.src = candidates[0];
-    }
-
-    // 2. 背景画像（CSS鍵盤）用：自動探査＆背景表示の最適化
-    function setWrapperBackgroundWithFallback(candidates) {
-      let index = 0;
-      // 一旦背景画像フラグをクリア
-      keyboardWrapper.classList.remove('has-custom-bg');
-
-      function tryNextBackground() {
-        if (index >= candidates.length) {
-          // 画像が一切無かった場合は標準CSS鍵盤を表示
-          keyboardWrapper.style.backgroundImage = 'none';
-          return;
-        }
-
-        const img = new Image();
-        const testUrl = candidates[index];
-
-        img.onload = function() {
-          // 画像が存在したら背景に指定し、CSSスタイルを最適化
-          keyboardWrapper.style.backgroundImage = `url('${testUrl}')`;
-          keyboardWrapper.classList.add('has-custom-bg');
-        };
-
-        img.onerror = function() {
-          index++;
-          tryNextBackground();
-        };
-
-        img.src = testUrl;
-      }
-
-      tryNextBackground();
-    }
-
-    /* =========================================================
-       Web Audio API & SpeechSynthesis iOS解放コード
-       ========================================================= */
-    let audioCtx = null;
-    let isAudioUnlocked = false;
-    let isSpeechUnlocked = false;
-
-    function initAudioContext() {
-      if (!audioCtx) {
-        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-        if (AudioContextClass) {
-          audioCtx = new AudioContextClass();
+          emojiFallback.textContent = fallbackEmoji;
         }
       }
-    }
+    };
 
-    function unlockMedia() {
-      // 1. Web Audio API 解放
-      initAudioContext();
-      if (audioCtx && audioCtx.state === 'suspended') {
-        audioCtx.resume();
+    imgElement.onload = function() {
+      if (onSuccessCallback) {
+        onSuccessCallback(imgElement.src);
       }
-      if (audioCtx && !isAudioUnlocked) {
-        const buffer = audioCtx.createBuffer(1, 1, 22050);
-        const source = audioCtx.createBufferSource();
-        source.buffer = buffer;
-        source.connect(audioCtx.destination);
-        source.start(0);
-        isAudioUnlocked = true;
-      }
+    };
 
-      // 2. SpeechSynthesis（自動音声）解放
-      if ('speechSynthesis' in window && !isSpeechUnlocked) {
-        const dummyUtterance = new SpeechSynthesisUtterance('');
-        dummyUtterance.lang = 'ja-JP';
-        dummyUtterance.volume = 0; // 無音で初期化
-        window.speechSynthesis.speak(dummyUtterance);
-        isSpeechUnlocked = true;
-      }
-    }
+    imgElement.src = candidates[0];
+  }
 
-    // タッチ・クリック時に自動解凍イベントを登録
-    ['touchstart', 'touchend', 'pointerdown', 'mousedown'].forEach(eventName => {
-      window.addEventListener(eventName, unlockMedia, { once: true, passive: true });
-    });
+  // 鍵盤背景CSS用：多段階探査
+  function setKeyboardBackgroundWithFallback(candidates) {
+    let index = 0;
+    keyboardWrapper.classList.remove('has-custom-bg');
 
-    // --- 日本語の自動音声案内（SpeechSynthesis） ---
-    function speakGuide(text) {
-      if (!('speechSynthesis' in window)) return;
-
-      window.speechSynthesis.cancel();
-
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'ja-JP';
-      utterance.rate = 0.95; 
-      utterance.pitch = 1.25;
-
-      const voices = window.speechSynthesis.getVoices();
-      const jaVoice = voices.find(v => v.lang.includes('ja') || v.lang.includes('JP'));
-      if (jaVoice) {
-        utterance.voice = jaVoice;
-      }
-
-      setTimeout(() => {
-        window.speechSynthesis.speak(utterance);
-      }, 120);
-    }
-
-    function playCurrentGuide() {
-      if (currentStage === 1) {
-        speakGuide("さくらんぼを黒い鍵盤の上に置いてね");
-      } else if (currentStage === 2) {
-        speakGuide("お団子を黒い鍵盤の上に置いてね");
-      }
-    }
-
-    // --- 効果音作成 ---
-    function playDingDong() {
-      unlockMedia();
-      if (!audioCtx) return;
-
-      const now = audioCtx.currentTime;
-
-      // 「ピン」
-      const osc1 = audioCtx.createOscillator();
-      const gain1 = audioCtx.createGain();
-      osc1.type = 'sine';
-      osc1.frequency.setValueAtTime(1318.51, now);
-      gain1.gain.setValueAtTime(0.35, now);
-      gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
-      osc1.connect(gain1);
-      gain1.connect(audioCtx.destination);
-      osc1.start(now);
-      osc1.stop(now + 0.4);
-
-      // 「ポン」
-      const osc2 = audioCtx.createOscillator();
-      const gain2 = audioCtx.createGain();
-      osc2.type = 'sine';
-      osc2.frequency.setValueAtTime(1046.50, now + 0.15);
-      gain2.gain.setValueAtTime(0.35, now + 0.15);
-      gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
-      osc2.connect(gain2);
-      gain2.connect(audioCtx.destination);
-      osc2.start(now + 0.15);
-      osc2.stop(now + 0.7);
-    }
-
-    function playFanfare() {
-      unlockMedia();
-      if (!audioCtx) return;
-
-      const now = audioCtx.currentTime;
-      const notes = [523.25, 659.25, 783.99, 1046.50];
-
-      notes.forEach((freq, idx) => {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(freq, now + idx * 0.12);
-        
-        const duration = (idx === notes.length - 1) ? 0.7 : 0.12;
-        gain.gain.setValueAtTime(0.3, now + idx * 0.12);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.12 + duration);
-        
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start(now + idx * 0.12);
-        osc.stop(now + idx * 0.12 + duration);
-      });
-    }
-
-    function playGrandTaDa() {
-      unlockMedia();
-      if (!audioCtx) return;
-
-      const now = audioCtx.currentTime;
-      const chord = [261.63, 329.63, 392.00, 523.25, 659.25, 783.99, 1046.50];
-
-      chord.forEach((freq) => {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, now);
-        gain.gain.setValueAtTime(0.18, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 2.2);
-        
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start(now);
-        osc.stop(now + 2.2);
-      });
-    }
-
-    /* =========================================================
-       ステージ描画 & 管理処理
-       ========================================================= */
-    function loadStage(stageNum) {
-      currentStage = stageNum;
-      successCount = 0;
-      updateStars();
-
-      // 初期ドラッグ位置にリセット
-      resetDraggablePosition();
-
-      if (stageNum === 1) {
-        // --- ステージ1：ドレミ（黒鍵2本・さくらんぼ） ---
-        setWrapperBackgroundWithFallback(FILES_STAGE1_BG);
-        loadItemImageWithFallback(FILES_SAKURANBO, "🍒");
-        
-        // さくらんぼは元の向きで表示
-        imageContainer.classList.remove('rotate-horizontal');
-
-        // 白鍵3枚、黒鍵2本の鍵盤枠を生成
-        keyboardWrapper.innerHTML = `
-          <div class="piano-keyboard">
-            <div class="white-key"></div>
-            <div class="white-key"></div>
-            <div class="white-key"></div>
-            <div class="black-keys-target stage1-target target-highlight" id="target-area">
-              <div class="black-key"></div>
-              <div class="black-key"></div>
-            </div>
-          </div>
-        `;
-
-        // 音声ガイド再生
-        playCurrentGuide();
-
-      } else if (stageNum === 2) {
-        // --- ステージ2：ファソラシ（黒鍵3本・串団子） ---
-        setWrapperBackgroundWithFallback(FILES_STAGE2_BG);
-        loadItemImageWithFallback(FILES_KUSHIDANGO, "🍡");
-
-        // お団子画像をCSSで「真横（水平）」に90度回転
-        imageContainer.classList.add('rotate-horizontal');
-
-        // 白鍵4枚、黒鍵3本の鍵盤枠を生成
-        keyboardWrapper.innerHTML = `
-          <div class="piano-keyboard">
-            <div class="white-key"></div>
-            <div class="white-key"></div>
-            <div class="white-key"></div>
-            <div class="white-key"></div>
-            <div class="black-keys-target stage2-target target-highlight" id="target-area">
-              <div class="black-key"></div>
-              <div class="black-key"></div>
-              <div class="black-key"></div>
-            </div>
-          </div>
-        `;
-
-        // 音声ガイド再生
-        playCurrentGuide();
-
-      } else if (stageNum === 3) {
-        // --- ステージ3：ごほうび画面 ---
-        showRewardScreen();
+    function tryNext() {
+      if (index >= candidates.length) {
+        keyboardWrapper.style.backgroundImage = 'none';
         return;
       }
+      const img = new Image();
+      const testUrl = candidates[index];
+
+      img.onload = function() {
+        keyboardWrapper.style.backgroundImage = `url('${testUrl}')`;
+        keyboardWrapper.classList.add('has-custom-bg');
+      };
+
+      img.onerror = function() {
+        index++;
+        tryNext();
+      };
+
+      img.src = testUrl;
     }
 
-    // ★進捗表示の更新
-    function updateStars() {
-      for (let i = 1; i <= 3; i++) {
-        const star = document.getElementById(`star-${i}`);
-        if (i <= successCount) {
-          star.classList.add('active');
-        } else {
-          star.classList.remove('active');
-        }
+    tryNext();
+  }
+
+  /* =========================================================
+     5. Web Audio API & SpeechSynthesis iOS制限解除
+     ========================================================= */
+  let audioCtx = null;
+  let isAudioUnlocked = false;
+  let isSpeechUnlocked = false;
+
+  function initAudioContext() {
+    if (!audioCtx) {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (AudioContextClass) audioCtx = new AudioContextClass();
+    }
+  }
+
+  function unlockAudioAndSpeech() {
+    initAudioContext();
+    if (audioCtx && audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+    if (audioCtx && !isAudioUnlocked) {
+      const buffer = audioCtx.createBuffer(1, 1, 22050);
+      const source = audioCtx.createBufferSource();
+      source.buffer = buffer;
+      source.connect(audioCtx.destination);
+      source.start(0);
+      isAudioUnlocked = true;
+    }
+
+    if ('speechSynthesis' in window && !isSpeechUnlocked) {
+      const dummy = new SpeechSynthesisUtterance('');
+      dummy.lang = 'ja-JP';
+      dummy.volume = 0;
+      window.speechSynthesis.speak(dummy);
+      isSpeechUnlocked = true;
+    }
+  }
+
+  // 自動音声ガイド（SpeechSynthesis）
+  function speakGuide(text) {
+    if (!('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'ja-JP';
+    utterance.rate = 0.92;  // 幼児に聞き取りやすいよう少しゆったり
+    utterance.pitch = 1.25; // 優しく高めのトーン
+
+    const voices = window.speechSynthesis.getVoices();
+    const jaVoice = voices.find(v => v.lang.includes('ja') || v.lang.includes('JP'));
+    if (jaVoice) utterance.voice = jaVoice;
+
+    setTimeout(() => {
+      window.speechSynthesis.speak(utterance);
+    }, 150);
+  }
+
+  /* =========================================================
+     6. 効果音（Web Audio APIによる和音生成）
+     ========================================================= */
+  // 正解音：「ピンポン！」
+  function playDingDong() {
+    unlockAudioAndSpeech();
+    if (!audioCtx) return;
+
+    const now = audioCtx.currentTime;
+
+    const osc1 = audioCtx.createOscillator();
+    const gain1 = audioCtx.createGain();
+    osc1.type = 'sine';
+    osc1.frequency.setValueAtTime(1318.51, now); // ミ
+    gain1.gain.setValueAtTime(0.35, now);
+    gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+    osc1.connect(gain1);
+    gain1.connect(audioCtx.destination);
+    osc1.start(now);
+    osc1.stop(now + 0.4);
+
+    const osc2 = audioCtx.createOscillator();
+    const gain2 = audioCtx.createGain();
+    osc2.type = 'sine';
+    osc2.frequency.setValueAtTime(1046.50, now + 0.15); // ド
+    gain2.gain.setValueAtTime(0.35, now + 0.15);
+    gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
+    osc2.connect(gain2);
+    gain2.connect(audioCtx.destination);
+    osc2.start(now + 0.15);
+    osc2.stop(now + 0.7);
+  }
+
+  // ステージクリア音：「ファンファーレ」
+  function playFanfare() {
+    unlockAudioAndSpeech();
+    if (!audioCtx) return;
+
+    const now = audioCtx.currentTime;
+    const notes = [523.25, 659.25, 783.99, 1046.50]; // ド・ミ・ソ・ド
+
+    notes.forEach((freq, idx) => {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, now + idx * 0.12);
+
+      const duration = (idx === notes.length - 1) ? 0.7 : 0.12;
+      gain.gain.setValueAtTime(0.3, now + idx * 0.12);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.12 + duration);
+
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(now + idx * 0.12);
+      osc.stop(now + idx * 0.12 + duration);
+    });
+  }
+
+  // 全クリア音：「グランドフィナーレ」
+  function playGrandTaDa() {
+    unlockAudioAndSpeech();
+    if (!audioCtx) return;
+
+    const now = audioCtx.currentTime;
+    const chord = [261.63, 329.63, 392.00, 523.25, 659.25, 783.99, 1046.50];
+
+    chord.forEach((freq) => {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, now);
+      gain.gain.setValueAtTime(0.18, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 2.5);
+
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 2.5);
+    });
+  }
+
+  /* =========================================================
+     7. マップ画面＆進捗の更新処理
+     ========================================================= */
+  function updateMapUI() {
+    if (isStage2Unlocked) {
+      nodeStage2.classList.remove('locked');
+      nodeStage2.classList.add('active');
+      mapPath.classList.add('unlocked');
+    } else {
+      nodeStage2.classList.add('locked');
+      nodeStage2.classList.remove('active');
+      mapPath.classList.remove('unlocked');
+    }
+  }
+
+  /* =========================================================
+     8. ステージ開始＆ゲーム画面構築
+     ========================================================= */
+  function startStage(stageNum) {
+    currentStage = stageNum;
+    successCount = 0;
+    trayArea.innerHTML = ''; // ごほうびトレイを清掃
+    resetDraggablePosition();
+
+    if (stageNum === 1) {
+      // --- ステージ1：さくらんぼ ---
+      setKeyboardBackgroundWithFallback(FILES_STAGE1_BG);
+      loadImageWithFallback(itemImg, FILES_SAKURANBO, "🍒", path => {
+        loadedPathSakuranbo = path;
+      });
+
+      imageContainer.classList.remove('rotate-horizontal'); // 回転解除
+
+      keyboardWrapper.innerHTML = `
+        <div class="piano-keyboard">
+          <div class="white-key"></div>
+          <div class="white-key"></div>
+          <div class="white-key"></div>
+          <div class="black-keys-target stage1-target target-highlight" id="target-area">
+            <div class="black-key"></div>
+            <div class="black-key"></div>
+          </div>
+        </div>
+      `;
+
+      showScreen(screenGame);
+      speakGuide("さくらんぼを黒い鍵盤の上に置いてね");
+
+    } else if (stageNum === 2) {
+      // --- ステージ2：お団子 ---
+      setKeyboardBackgroundWithFallback(FILES_STAGE2_BG);
+      loadImageWithFallback(itemImg, FILES_KUSHIDANGO, "🍡", path => {
+        loadedPathKushidango = path;
+      });
+
+      imageContainer.classList.add('rotate-horizontal'); // 真横（90度）に回転
+
+      keyboardWrapper.innerHTML = `
+        <div class="piano-keyboard">
+          <div class="white-key"></div>
+          <div class="white-key"></div>
+          <div class="white-key"></div>
+          <div class="white-key"></div>
+          <div class="black-keys-target stage2-target target-highlight" id="target-area">
+            <div class="black-key"></div>
+            <div class="black-key"></div>
+            <div class="black-key"></div>
+          </div>
+        </div>
+      `;
+
+      showScreen(screenGame);
+      speakGuide("お団子を黒い鍵盤の上に置いてね");
+    }
+  }
+
+  // ごほうびトレイ（お皿）へアイテムを追加する処理（案③）
+  function addItemToTray() {
+    const trayImg = document.createElement('img');
+    trayImg.className = 'tray-item';
+
+    if (currentStage === 1) {
+      trayImg.src = loadedPathSakuranbo || itemImg.src;
+    } else {
+      trayImg.src = loadedPathKushidango || itemImg.src;
+      trayImg.style.transform = 'rotate(90deg)'; // トレイの上でも水平向きに配置
+    }
+
+    trayArea.appendChild(trayImg);
+  }
+
+  /* =========================================================
+     9. タッチ＆ドラッグ操作（iPad完全対応）
+     ========================================================= */
+  function getEventPos(e) {
+    if (e.touches && e.touches.length > 0) {
+      return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    }
+    return { x: e.clientX, y: e.clientY };
+  }
+
+  function handleDragStart(e) {
+    unlockAudioAndSpeech();
+    if (isDragging) return;
+    isDragging = true;
+
+    draggable.classList.remove('snap-back');
+
+    const pos = getEventPos(e);
+    startX = pos.x - currentX;
+    startY = pos.y - currentY;
+
+    if (e.cancelable) e.preventDefault();
+  }
+
+  function handleDragMove(e) {
+    if (!isDragging) return;
+    if (e.cancelable) e.preventDefault();
+
+    const pos = getEventPos(e);
+    currentX = pos.x - startX;
+    currentY = pos.y - startY;
+
+    draggable.style.transform = `translate3d(${currentX}px, ${currentY}px, 0px)`;
+  }
+
+  function handleDragEnd() {
+    if (!isDragging) return;
+    isDragging = false;
+
+    const targetArea = document.getElementById('target-area');
+    if (!targetArea) return;
+
+    const itemRect = draggable.getBoundingClientRect();
+    const targetRect = targetArea.getBoundingClientRect();
+
+    const itemCenterX = itemRect.left + itemRect.width / 2;
+    const itemCenterY = itemRect.top + itemRect.height / 2;
+
+    // 当たり判定
+    const isHit =
+      itemCenterX >= (targetRect.left - HIT_MARGIN) &&
+      itemCenterX <= (targetRect.right + HIT_MARGIN) &&
+      itemCenterY >= (targetRect.top - HIT_MARGIN) &&
+      itemCenterY <= (targetRect.bottom + HIT_MARGIN);
+
+    if (isHit) {
+      // 正解処理
+      playDingDong();
+      successCount++;
+      addItemToTray(); // お皿にイラストを追加
+      resetDraggablePosition();
+
+      if (successCount >= 3) {
+        // 3回正解でステージクリア
+        setTimeout(() => {
+          playFanfare();
+
+          if (currentStage === 1) {
+            isStage2Unlocked = true;
+            nodeStage1.classList.add('cleared');
+            updateMapUI();
+
+            setTimeout(() => {
+              showScreen(screenMap);
+              speakGuide("すごーい！つぎのおだんごもやってみよう！");
+            }, 1000);
+          } else if (currentStage === 2) {
+            nodeStage2.classList.add('cleared');
+            setTimeout(() => {
+              showRewardScreen(); // くす玉全クリア画面へ
+            }, 1000);
+          }
+        }, 400);
+
+      } else {
+        // 次のドラッグを促す音声
+        setTimeout(() => {
+          if (currentStage === 1) speakGuide("もういちど！さくらんぼを置いてね");
+          else speakGuide("もういちど！お団子を置いてね");
+        }, 600);
       }
-    }
 
-    // ドラッグ位置のリセット
-    function resetDraggablePosition() {
-      draggable.classList.remove('snap-back');
+    } else {
+      // 不正解処理：元の位置へスッと戻る
+      draggable.classList.add('snap-back');
       currentX = 0;
       currentY = 0;
       draggable.style.transform = 'translate3d(0px, 0px, 0px)';
     }
+  }
 
-    /* =========================================================
-       iPad完全対応のタッチ＆ドラッグ処理
-       ========================================================= */
-    function getEventPos(e) {
-      if (e.touches && e.touches.length > 0) {
-        return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  function resetDraggablePosition() {
+    draggable.classList.remove('snap-back');
+    currentX = 0;
+    currentY = 0;
+    draggable.style.transform = 'translate3d(0px, 0px, 0px)';
+  }
+
+  // ドラッグイベントリスナーの登録
+  draggable.addEventListener('touchstart', handleDragStart, { passive: false });
+  window.addEventListener('touchmove', handleDragMove, { passive: false });
+  window.addEventListener('touchend', handleDragEnd, { passive: false });
+
+  draggable.addEventListener('mousedown', handleDragStart);
+  window.addEventListener('mousemove', handleDragMove);
+  window.addEventListener('mouseup', handleDragEnd);
+
+  /* =========================================================
+     10. ごほうび画面＆紙吹雪（くす玉演出）
+     ========================================================= */
+  const canvas = document.getElementById('confetti-canvas');
+  const ctx = canvas.getContext('2d');
+  let particles = [];
+  let animationId = null;
+
+  function showRewardScreen() {
+    showScreen(screenReward);
+    playGrandTaDa();
+    startConfetti();
+    speakGuide("ぜんぶクリア！おめでとう！すごーい！");
+  }
+
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resizeCanvas);
+
+  function startConfetti() {
+    resizeCanvas();
+    particles = [];
+    const colors = ['#f43f5e', '#0ea5e9', '#eab308', '#22c55e', '#a855f7', '#ec4899'];
+
+    for (let i = 0; i < 120; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height - canvas.height,
+        size: Math.random() * 15 + 8,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        vy: Math.random() * 3 + 2.5,
+        vx: Math.random() * 2 - 1,
+        rotation: Math.random() * 360,
+        rotSpeed: Math.random() * 4 - 2
+      });
+    }
+    renderConfetti();
+  }
+
+  function renderConfetti() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    particles.forEach((p) => {
+      p.y += p.vy;
+      p.x += p.vx;
+      p.rotation += p.rotSpeed;
+
+      if (p.y > canvas.height) {
+        p.y = -20;
+        p.x = Math.random() * canvas.width;
       }
-      return { x: e.clientX, y: e.clientY };
-    }
 
-    function handleDragStart(e) {
-      unlockMedia();
-
-      if (isDragging) return;
-      isDragging = true;
-
-      draggable.classList.remove('snap-back');
-
-      const pos = getEventPos(e);
-      startX = pos.x - currentX;
-      startY = pos.y - currentY;
-
-      if (e.cancelable) e.preventDefault();
-    }
-
-    function handleDragMove(e) {
-      if (!isDragging) return;
-
-      if (e.cancelable) e.preventDefault();
-
-      const pos = getEventPos(e);
-      currentX = pos.x - startX;
-      currentY = pos.y - startY;
-
-      draggable.style.transform = `translate3d(${currentX}px, ${currentY}px, 0px)`;
-    }
-
-    function handleDragEnd(e) {
-      if (!isDragging) return;
-      isDragging = false;
-
-      const targetArea = document.getElementById('target-area');
-      if (!targetArea) return;
-
-      const itemRect = draggable.getBoundingClientRect();
-      const targetRect = targetArea.getBoundingClientRect();
-
-      const itemCenterX = itemRect.left + itemRect.width / 2;
-      const itemCenterY = itemRect.top + itemRect.height / 2;
-
-      // 当たり判定
-      const isHit = 
-        itemCenterX >= (targetRect.left - HIT_MARGIN) &&
-        itemCenterX <= (targetRect.right + HIT_MARGIN) &&
-        itemCenterY >= (targetRect.top - HIT_MARGIN) &&
-        itemCenterY <= (targetRect.bottom + HIT_MARGIN);
-
-      if (isHit) {
-        // 正解処理
-        playDingDong();
-        successCount++;
-        updateStars();
-
-        resetDraggablePosition();
-
-        if (successCount >= 3) {
-          setTimeout(() => {
-            playFanfare();
-            setTimeout(() => {
-              loadStage(currentStage + 1);
-            }, 900);
-          }, 300);
-        } else {
-          setTimeout(() => {
-            playCurrentGuide();
-          }, 600);
-        }
-      } else {
-        // 不正解処理
-        draggable.classList.add('snap-back');
-        currentX = 0;
-        currentY = 0;
-        draggable.style.transform = 'translate3d(0px, 0px, 0px)';
-      }
-    }
-
-    // イベントリスナー登録
-    draggable.addEventListener('touchstart', handleDragStart, { passive: false });
-    window.addEventListener('touchmove', handleDragMove, { passive: false });
-    window.addEventListener('touchend', handleDragEnd, { passive: false });
-
-    draggable.addEventListener('mousedown', handleDragStart);
-    window.addEventListener('mousemove', handleDragMove);
-    window.addEventListener('mouseup', handleDragEnd);
-
-    /* =========================================================
-       ステージ3：ごほうび画面 & 紙吹雪アニメーション
-       ========================================================= */
-    function showRewardScreen() {
-      rewardScreen.style.display = 'flex';
-      playGrandTaDa();
-      startConfetti();
-    }
-
-    rewardScreen.addEventListener('click', () => {
-      rewardScreen.style.display = 'none';
-      stopConfetti();
-      loadStage(1);
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate((p.rotation * Math.PI) / 180);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+      ctx.restore();
     });
 
-    const canvas = document.getElementById('confetti-canvas');
-    const ctx = canvas.getContext('2d');
-    let particles = [];
-    let animationId = null;
+    animationId = requestAnimationFrame(renderConfetti);
+  }
 
-    function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+  function stopConfetti() {
+    if (animationId) cancelAnimationFrame(animationId);
+  }
+
+  /* =========================================================
+     11. ボタン各種イベント設定 & 初期化
+     ========================================================= */
+  // 1. トントンボタン（起動時の音声ロック解除）
+  btnTonton.addEventListener('click', () => {
+    unlockAudioAndSpeech();
+    showScreen(screenMap);
+    speakGuide("あそびたいほうをえらんでね！");
+  });
+
+  // 2. マップコマの選択
+  nodeStage1.addEventListener('click', () => {
+    unlockAudioAndSpeech();
+    startStage(1);
+  });
+
+  nodeStage2.addEventListener('click', () => {
+    if (!isStage2Unlocked) return; // 未解放時はタップ無効
+    unlockAudioAndSpeech();
+    startStage(2);
+  });
+
+  // 3. マップへ戻るボタン
+  btnBackMap.addEventListener('click', () => {
+    showScreen(screenMap);
+  });
+
+  // 4. 赤い更新ボタン（↻）：最初に戻る
+  btnReset.addEventListener('click', () => {
+    stopConfetti();
+    isStage2Unlocked = false;
+    nodeStage1.classList.remove('cleared');
+    nodeStage2.classList.remove('cleared');
+    updateMapUI();
+    showScreen(screenStart);
+  });
+
+  // 初期化処理
+  function initGame() {
+    // マップ上のアイコン画像を全自動探査読み込み
+    loadImageWithFallback(mapImgSakuranbo, FILES_SAKURANBO, "🍒");
+    loadImageWithFallback(mapImgKushidango, FILES_KUSHIDANGO, "🍡");
+
+    updateMapUI();
+
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.onvoiceschanged = () => {
+        window.speechSynthesis.getVoices();
+      };
     }
-    window.addEventListener('resize', resizeCanvas);
+  }
 
-    function startConfetti() {
-      resizeCanvas();
-      particles = [];
-      const colors = ['#f43f5e', '#0ea5e9', '#eab308', '#22c55e', '#a855f7', '#ec4899'];
-
-      for (let i = 0; i < 110; i++) {
-        particles.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height - canvas.height,
-          size: Math.random() * 14 + 8,
-          color: colors[Math.floor(Math.random() * colors.length)],
-          vy: Math.random() * 3 + 2.5,
-          vx: Math.random() * 2 - 1,
-          rotation: Math.random() * 360,
-          rotSpeed: Math.random() * 4 - 2
-        });
-      }
-      renderConfetti();
-    }
-
-    function renderConfetti() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      particles.forEach((p) => {
-        p.y += p.vy;
-        p.x += p.vx;
-        p.rotation += p.rotSpeed;
-
-        if (p.y > canvas.height) {
-          p.y = -20;
-          p.x = Math.random() * canvas.width;
-        }
-
-        ctx.save();
-        ctx.translate(p.x, p.y);
-        ctx.rotate((p.rotation * Math.PI) / 180);
-        ctx.fillStyle = p.color;
-        ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
-        ctx.restore();
-      });
-
-      animationId = requestAnimationFrame(renderConfetti);
-    }
-
-    function stopConfetti() {
-      if (animationId) {
-        cancelAnimationFrame(animationId);
-      }
-    }
-
-    /* =========================================================
-       初期化処理
-       ========================================================= */
-    function initGame() {
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.onvoiceschanged = () => {
-          window.speechSynthesis.getVoices();
-        };
-      }
-      loadStage(1);
-    }
-
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initGame);
-    } else {
-      initGame();
-    }
-  </script>
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initGame);
+  } else {
+    initGame();
+  }
+</script>
 </body>
 </html>
