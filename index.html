@@ -208,13 +208,7 @@
       display: none;
     }
 
-    /* --- お団子の回転ロジック ---
-       ・運ぶとき（鍵盤の上）：iPad・iPhone問わず【常に横向き（寝た状態）】
-         → 横に3つ並ぶ黒鍵をぴったり覆って覚えやすくするため。
-       ・お皿に並ぶとき：
-         - iPad（横画面）：横向き「三」の字
-         - iPhone（縦画面）：縦向き「川」の字
-    */
+    /* --- お団子の回転ロジック --- */
     .is-dango {
       transform: rotate(90deg); /* 運ぶときは常に横向き */
     }
@@ -526,7 +520,7 @@
   </section>
 
   <!-- =========================================================
-     JavaScript（動作制御・音声・黒鍵直上判定・状態管理）
+     JavaScript（動作制御・音声・黒鍵直上判定・連打ガード制御）
      ========================================================= -->
   <script>
     /* 1. 画像探査リスト */
@@ -538,6 +532,7 @@
     /* 2. ゲーム状態変数 */
     let currentStage = 1;  // 1: さくらんぼ, 2: お団子
     let successCount = 0;  // 正解数 (0〜3)
+    let isLocked = false;  // ★連打防止フラグ（クリア演出・ステージ切り替え中のドラッグガード）
 
     let loadedPathSakuranbo = "";
     let loadedPathKushidango = "";
@@ -743,6 +738,7 @@
     function startStage(stageNum) {
       currentStage = stageNum;
       successCount = 0;
+      isLocked = false; // ★ステージ準備完了に伴い操作ロック解除
       trayArea.innerHTML = '';
       resetDraggablePosition();
 
@@ -815,7 +811,7 @@
       trayArea.appendChild(trayImg);
     }
 
-    /* 7. ドラッグ＆ドロップおよび【黒鍵直上限定の厳格判定】 */
+    /* 7. ドラッグ＆ドロップおよび判定 */
     function getEventPos(e) {
       if (e.touches && e.touches.length > 0) {
         return { x: e.touches[0].clientX, y: e.touches[0].clientY };
@@ -825,7 +821,7 @@
 
     function handleDragStart(e) {
       unlockAudio();
-      if (isDragging) return;
+      if (isDragging || isLocked) return; // ★ロック状態（isLocked）なら操作を無視
       isDragging = true;
 
       draggable.classList.remove('snap-back');
@@ -861,8 +857,7 @@
       const itemCenterX = itemRect.left + itemRect.width / 2;
       const itemCenterY = itemRect.top + itemRect.height / 2;
 
-      /* 【黒鍵の真上だけを判定する厳格ロジック】
-         ・下方向（MARGIN_Y_BOTTOM）：マイナス10px（白い部分に触れた瞬間即アウト） */
+      /* 【黒鍵の真上判定】 */
       const MARGIN_X = 15;
       const MARGIN_Y_TOP = 10;
       const MARGIN_Y_BOTTOM = -10;
@@ -881,12 +876,14 @@
         resetDraggablePosition();
 
         if (successCount >= 3) {
+          isLocked = true; // ★ 3回達成した瞬間に画面のドラッグ操作を完全ロック！
+
           setTimeout(() => {
             playFanfare();
 
             if (currentStage === 1) {
               setTimeout(() => {
-                startStage(2);
+                startStage(2); // ここで内部的に isLocked = false に解除されます
               }, 1200);
             } else if (currentStage === 2) {
               setTimeout(() => {
@@ -903,7 +900,7 @@
         }
 
       } else {
-        // 不正解（白鍵の上や外れた場所）：即座に元の位置へスッと戻る
+        // 不正解：即座に元の位置へスッと戻る
         draggable.classList.add('snap-back');
         currentX = 0;
         currentY = 0;
@@ -1008,11 +1005,13 @@
     });
 
     btnReset.addEventListener('click', () => {
+      isLocked = false;
       stopConfetti();
       showScreen(screenStart);
     });
 
     btnReplay.addEventListener('click', () => {
+      isLocked = false;
       stopConfetti();
       showScreen(screenStart);
     });
