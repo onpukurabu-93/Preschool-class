@@ -6,7 +6,7 @@
   <title>たのしい ピアノあそび</title>
   <style>
     /* =========================================================
-       1. 基本スタイル & 横画面（横向き）最適化
+       1. 基本スタイル & 画面全体設定
        ========================================================= */
     * {
       box-sizing: border-box;
@@ -26,7 +26,6 @@
       color: #334155;
     }
 
-    /* 画面切り替え用セクション */
     .screen {
       display: none;
       width: 100vw;
@@ -44,7 +43,7 @@
       display: flex;
     }
 
-    /* 固定コントロールボタン（画面右上のリセットボタン ↻） */
+    /* 右上固定のリセットボタン（↻） */
     #btn-reset {
       position: fixed;
       top: 15px;
@@ -80,20 +79,20 @@
     }
 
     .start-card {
-      background: rgba(255, 255, 255, 0.9);
-      padding: 2rem 3rem;
-      border-radius: 30px;
+      background: rgba(255, 255, 255, 0.92);
+      padding: 2rem 3.5rem;
+      border-radius: 32px;
       box-shadow: 0 10px 25px rgba(0,0,0,0.1);
       border: 4px solid #fbbf24;
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 1.5rem;
-      max-width: 80%;
+      max-width: 85%;
     }
 
     .start-title {
-      font-size: 2.2rem;
+      font-size: 2.4rem;
       color: #d97706;
       font-weight: bold;
       text-shadow: 1px 1px 0px white;
@@ -101,7 +100,7 @@
 
     .btn-tonton {
       font-size: 2rem;
-      padding: 1rem 3rem;
+      padding: 1rem 3.5rem;
       border-radius: 50px;
       background: linear-gradient(180deg, #f43f5e 0%, #e11d48 100%);
       color: white;
@@ -118,11 +117,11 @@
     }
 
     /* =========================================================
-       3. メインゲーム画面（横画面に完全最適化した3カラム構成）
+       3. メインゲーム画面（横画面優先レイアウト）
        ========================================================= */
     #screen-game {
       display: none;
-      flex-direction: row; /* 横並び配置 */
+      flex-direction: row;
       justify-content: space-between;
       align-items: center;
       padding: 1.5rem 2rem;
@@ -135,7 +134,7 @@
       display: flex;
     }
 
-    /* --- 左エリア：ドラッグ素材（スタート位置） --- */
+    /* --- 左エリア：素材エリア --- */
     .game-sidebar-left {
       width: 22%;
       height: 100%;
@@ -147,8 +146,8 @@
     }
 
     .source-box {
-      width: 140px;
-      height: 140px;
+      width: 130px;
+      height: 130px;
       background: rgba(255, 255, 255, 0.7);
       border: 3px dashed #38bdf8;
       border-radius: 24px;
@@ -159,8 +158,8 @@
     }
 
     #draggable {
-      width: 120px;
-      height: 120px;
+      width: 110px;
+      height: 110px;
       cursor: grab;
       touch-action: none;
       position: absolute;
@@ -178,7 +177,15 @@
       transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
-    #draggable img {
+    #image-container {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #item-img {
       width: 100%;
       height: 100%;
       object-fit: contain;
@@ -186,18 +193,13 @@
       filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
     }
 
-    /* 団子の水平回転用クラス */
-    .rotate-horizontal {
-      transform: rotate(90deg);
-    }
-
     .emoji-fallback {
-      font-size: 80px;
+      font-size: 75px;
       line-height: 1;
       display: none;
     }
 
-    /* --- 中央エリア：鍵盤（メイングラフィック） --- */
+    /* --- 中央エリア：鍵盤グラフィック --- */
     .game-center {
       width: 52%;
       height: 100%;
@@ -220,7 +222,7 @@
       padding-bottom: 10px;
     }
 
-    /* 画像がない場合の標準CSSピアノ鍵盤 */
+    /* 標準CSSピアノ鍵盤 */
     .piano-keyboard {
       display: flex;
       position: relative;
@@ -231,7 +233,7 @@
     }
 
     #keyboard-wrapper.has-custom-bg .piano-keyboard {
-      opacity: 0; /* 画像読み込み成功時は標準キーボードを透明化 */
+      opacity: 0;
     }
 
     .white-key {
@@ -243,14 +245,13 @@
       margin: 0 2px;
     }
 
-    /* --- 黒鍵＆ターゲット判定ゾーン（完全透明化） --- */
+    /* --- 黒鍵ターゲット判定エリア（完全透明化＆厳格判定） --- */
     .black-keys-target {
       position: absolute;
       top: 8px;
       display: flex;
       gap: 12px;
       padding: 0;
-      /* ▼ 完全透明の設定 ▼ */
       background: transparent !important;
       border: none !important;
       box-shadow: none !important;
@@ -258,30 +259,42 @@
       z-index: 20;
     }
 
-    /* ステージごとの判定位置調整 */
     .stage1-target {
       left: 85px;
       width: 100px;
-      height: 140px;
+      height: 130px;
     }
 
     .stage2-target {
       left: 155px;
       width: 150px;
-      height: 140px;
+      height: 130px;
     }
 
     .black-key {
       width: 42px;
-      height: 130px;
+      height: 125px;
       background: #0f172a;
       border-radius: 0 0 6px 6px;
     }
 
-    /* カスタム画像背景時の判定用位置 */
-    #keyboard-wrapper.has-custom-bg .black-keys-target {
-      top: 15%;
-      height: 45%;
+    #keyboard-wrapper.has-custom-bg .black-key {
+      opacity: 0;
+    }
+
+    /* 画像読み込み時の透明判定領域の位置バランス */
+    #keyboard-wrapper.has-custom-bg .stage1-target {
+      top: 12%;
+      left: 36%;
+      width: 28%;
+      height: 48%;
+    }
+
+    #keyboard-wrapper.has-custom-bg .stage2-target {
+      top: 12%;
+      left: 32%;
+      width: 36%;
+      height: 48%;
     }
 
     /* --- 右エリア：ごほうびトレイ（お皿） --- */
@@ -295,41 +308,45 @@
     }
 
     .tray-container {
-      width: 150px;
-      height: 240px;
-      background: rgba(255, 255, 255, 0.85);
+      width: 140px;
+      height: 250px;
+      background: rgba(255, 255, 255, 0.88);
       border: 4px solid #f59e0b;
       border-radius: 30px;
       box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-      padding: 10px;
+      padding: 12px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: space-around;
-      position: relative;
+      justify-content: space-between;
     }
 
     .tray-title {
-      font-size: 0.9rem;
+      font-size: 0.95rem;
       font-weight: bold;
       color: #d97706;
-      margin-bottom: 4px;
+      margin-bottom: 2px;
     }
 
     #tray-area {
       width: 100%;
       height: 100%;
       display: flex;
-      flex-direction: column;
+      flex-direction: column; /* 横画面（iPad）時は縦並び */
       justify-content: space-around;
       align-items: center;
     }
 
     .tray-item {
-      width: 65px;
-      height: 65px;
+      width: 60px;
+      height: 60px;
       object-fit: contain;
       animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    /* iPad（横画面）時：お団子を横向き「三」にして綺麗に並べる */
+    .tray-item-dango {
+      transform: rotate(90deg);
     }
 
     @keyframes popIn {
@@ -338,7 +355,7 @@
     }
 
     /* =========================================================
-       4. 全クリア・ごほうび画面（くす玉＆紙吹雪）
+       4. 全クリア・ごほうび画面（くす玉）
        ========================================================= */
     #screen-reward {
       background: linear-gradient(135deg, #fef08a 0%, #f472b6 100%);
@@ -398,7 +415,7 @@
     }
 
     /* =========================================================
-       5. レスポンシブ微調整（縦画面でも崩れない最低限の安全策）
+       5. 縦画面（iPhone等）時のレスポンシブ表示調整
        ========================================================= */
     @media (orientation: portrait) {
       #screen-game {
@@ -406,24 +423,32 @@
         justify-content: space-around;
         padding: 1rem;
       }
+
       .game-sidebar-left, .game-center, .game-sidebar-right {
         width: 100%;
         height: auto;
       }
+
       .tray-container {
         width: 280px;
-        height: 90px;
-        flex-direction: row;
+        height: 100px;
+        flex-direction: column;
       }
+
       #tray-area {
-        flex-direction: row;
+        flex-direction: row; /* 縦画面時は横一列に並べる */
+      }
+
+      /* iPhone（縦画面）時：お団子を縦向き「川」にして綺麗に並べる */
+      .tray-item-dango {
+        transform: rotate(0deg);
       }
     }
   </style>
 </head>
 <body>
 
-  <!-- 固定コントロール：リセットボタン（↻） -->
+  <!-- 右上固定コントロール：最初に戻るボタン（↻） -->
   <button id="btn-reset" title="最初に戻る">↻</button>
 
   <!-- 1. トントン画面（スタート） -->
@@ -434,7 +459,7 @@
     </div>
   </section>
 
-  <!-- 2. メインゲーム画面（一本道・自動進行） -->
+  <!-- 2. メインゲーム画面（完全一本道フロー） -->
   <section id="screen-game" class="screen">
     <!-- 左：ドラッグ元 -->
     <div class="game-sidebar-left">
@@ -448,14 +473,14 @@
       </div>
     </div>
 
-    <!-- 中央：鍵盤 -->
+    <!-- 中央：鍵盤グラフィック -->
     <div class="game-center">
       <div id="keyboard-wrapper">
-        <!-- JSで動的に白鍵・黒鍵判定枠を生成 -->
+        <!-- JSで動的に鍵盤および透明判定ターゲット枠を配置 -->
       </div>
     </div>
 
-    <!-- 右：お皿（トレイ） -->
+    <!-- 右：ごほうびトレイ（お皿） -->
     <div class="game-sidebar-right">
       <div class="tray-container">
         <div class="tray-title">できたよ！</div>
@@ -475,8 +500,8 @@
   </section>
 
   <!-- =========================================================
-     JavaScript（動作制御・音声案内・ドラッグ判定・一本道フロー）
-     ========================================================= -->
+     JavaScript（動作制御・音声案内・厳格な黒鍵判定・一本道処理）
+     ========================================================= */ -->
   <script>
     /* 1. 画像探査リスト */
     const FILES_STAGE1_BG = ["kenban1.png", "Kenban1.png", "kenban1.PNG", "Kenban1.PNG", "KENBAN1.PNG", "kenban1.jpg", "Kenban1.jpg"];
@@ -487,7 +512,6 @@
     /* 2. ゲーム状態変数 */
     let currentStage = 1;  // 1: さくらんぼ, 2: お団子
     let successCount = 0;  // 正解数 (0〜3)
-    const HIT_MARGIN = 55; // 判定の許容幅 (px)
 
     let loadedPathSakuranbo = "";
     let loadedPathKushidango = "";
@@ -496,7 +520,7 @@
     let startX = 0, startY = 0;
     let currentX = 0, currentY = 0;
 
-    /* DOM要素 */
+    /* DOM要素の取得 */
     const screenStart = document.getElementById('screen-start');
     const screenGame = document.getElementById('screen-game');
     const screenReward = document.getElementById('screen-reward');
@@ -506,7 +530,6 @@
     const btnReplay = document.getElementById('btn-replay');
 
     const draggable = document.getElementById('draggable');
-    const imageContainer = document.getElementById('image-container');
     const itemImg = document.getElementById('item-img');
     const emojiFallback = document.getElementById('emoji-fallback');
     const keyboardWrapper = document.getElementById('keyboard-wrapper');
@@ -572,7 +595,7 @@
       tryNext();
     }
 
-    /* 5. 音声・Web Audio API */
+    /* 5. Web Audio API & 音声案内 */
     let audioCtx = null;
     let isAudioUnlocked = false;
 
@@ -690,7 +713,7 @@
       });
     }
 
-    /* 6. ステージ開始ロジック */
+    /* 6. ステージ構築 */
     function startStage(stageNum) {
       currentStage = stageNum;
       successCount = 0;
@@ -698,13 +721,11 @@
       resetDraggablePosition();
 
       if (stageNum === 1) {
-        // --- ステージ1：さくらんぼ ---
+        // ステージ1：さくらんぼ
         setKeyboardBackgroundWithFallback(FILES_STAGE1_BG);
         loadImageWithFallback(itemImg, FILES_SAKURANBO, "🍒", path => {
           loadedPathSakuranbo = path;
         });
-
-        imageContainer.classList.remove('rotate-horizontal');
 
         keyboardWrapper.innerHTML = `
           <div class="piano-keyboard">
@@ -722,13 +743,11 @@
         speakGuide("さくらんぼを くろい けんばんの上に おいてね");
 
       } else if (stageNum === 2) {
-        // --- ステージ2：お団子 ---
+        // ステージ2：お団子
         setKeyboardBackgroundWithFallback(FILES_STAGE2_BG);
         loadImageWithFallback(itemImg, FILES_KUSHIDANGO, "🍡", path => {
           loadedPathKushidango = path;
         });
-
-        imageContainer.classList.add('rotate-horizontal');
 
         keyboardWrapper.innerHTML = `
           <div class="piano-keyboard">
@@ -745,25 +764,26 @@
         `;
 
         showScreen(screenGame);
-        speakGuide("すごーい！つぎはおだんごだよ！くろい けんばんの上に おいてね");
+        speakGuide("つぎはおだんごだよ！くろい けんばんの上に おいてね");
       }
     }
 
+    /* お皿にごほうびアイテムを追加 */
     function addItemToTray() {
       const trayImg = document.createElement('img');
-      trayImg.className = 'tray-item';
 
       if (currentStage === 1) {
+        trayImg.className = 'tray-item';
         trayImg.src = loadedPathSakuranbo || itemImg.src;
       } else {
+        trayImg.className = 'tray-item tray-item-dango';
         trayImg.src = loadedPathKushidango || itemImg.src;
-        trayImg.style.transform = 'rotate(90deg)';
       }
 
       trayArea.appendChild(trayImg);
     }
 
-    /* 7. タッチ＆ドラッグ操作 */
+    /* 7. ドラッグ＆ドロップおよび【厳格な黒鍵判定】 */
     function getEventPos(e) {
       if (e.touches && e.touches.length > 0) {
         return { x: e.touches[0].clientX, y: e.touches[0].clientY };
@@ -806,35 +826,44 @@
       const itemRect = draggable.getBoundingClientRect();
       const targetRect = targetArea.getBoundingClientRect();
 
+      // 移動中の素材の中心点
       const itemCenterX = itemRect.left + itemRect.width / 2;
       const itemCenterY = itemRect.top + itemRect.height / 2;
 
-      // 透明ターゲット枠への当たり判定
+      /* =========================================================
+         【厳格な黒鍵判定ロジック】
+         ・左右の許容幅（MARGIN_X）：20px
+         ・上の許容幅（MARGIN_Y_TOP）：15px
+         ・下の許容幅（MARGIN_Y_BOTTOM）：5px（※白鍵への判定を完全にカット！）
+         ========================================================= */
+      const MARGIN_X = 20;
+      const MARGIN_Y_TOP = 15;
+      const MARGIN_Y_BOTTOM = 5; // 黒鍵の下端を超えて白鍵に落ちた場合は不正解
+
       const isHit =
-        itemCenterX >= (targetRect.left - HIT_MARGIN) &&
-        itemCenterX <= (targetRect.right + HIT_MARGIN) &&
-        itemCenterY >= (targetRect.top - HIT_MARGIN) &&
-        itemCenterY <= (targetRect.bottom + HIT_MARGIN);
+        itemCenterX >= (targetRect.left - MARGIN_X) &&
+        itemCenterX <= (targetRect.right + MARGIN_X) &&
+        itemCenterY >= (targetRect.top - MARGIN_Y_TOP) &&
+        itemCenterY <= (targetRect.bottom + MARGIN_Y_BOTTOM);
 
       if (isHit) {
-        // 正解！
+        // 正解（黒鍵の真上）
         playDingDong();
         successCount++;
         addItemToTray();
         resetDraggablePosition();
 
         if (successCount >= 3) {
-          // 3回正解で次のフローへ
           setTimeout(() => {
             playFanfare();
 
             if (currentStage === 1) {
-              // ステージ1クリア → 自動でステージ2（お団子）へ一本道進行
+              // ステージ1クリア → 自動的にステージ2（お団子）へ
               setTimeout(() => {
                 startStage(2);
               }, 1200);
             } else if (currentStage === 2) {
-              // ステージ2クリア → 自動で全クリア（くす玉）画面へ
+              // ステージ2クリア → 全クリア画面へ
               setTimeout(() => {
                 showRewardScreen();
               }, 1200);
@@ -849,7 +878,7 @@
         }
 
       } else {
-        // 不正解：元の位置へ戻る
+        // 不正解（白鍵の上や外れた場所）：元の位置へスッと戻る
         draggable.classList.add('snap-back');
         currentX = 0;
         currentY = 0;
@@ -864,7 +893,7 @@
       draggable.style.transform = 'translate3d(0px, 0px, 0px)';
     }
 
-    // ドラッグイベント登録
+    /* イベント登録 */
     draggable.addEventListener('touchstart', handleDragStart, { passive: false });
     window.addEventListener('touchmove', handleDragMove, { passive: false });
     window.addEventListener('touchend', handleDragEnd, { passive: false });
@@ -873,7 +902,7 @@
     window.addEventListener('mousemove', handleDragMove);
     window.addEventListener('mouseup', handleDragEnd);
 
-    /* 8. ごほうび演出（紙吹雪） */
+    /* 8. くす玉・紙吹雪演出 */
     const canvas = document.getElementById('confetti-canvas');
     const ctx = canvas.getContext('2d');
     let particles = [];
@@ -940,14 +969,12 @@
       if (animationId) cancelAnimationFrame(animationId);
     }
 
-    /* 9. イベントリスナー & リセット処理 */
-    // 「トントン！」で直接ステージ1を開始（一本道化）
+    /* 9. ボタン操作＆リセット処理 */
     btnTonton.addEventListener('click', () => {
       unlockAudio();
       startStage(1);
     });
 
-    // 画面全体のどこを押してもスタートできるように（子ども向け配慮）
     screenStart.addEventListener('click', (e) => {
       if (e.target === screenStart) {
         unlockAudio();
@@ -955,13 +982,11 @@
       }
     });
 
-    // 赤い更新ボタン（↻）でスタート画面へリセット
     btnReset.addEventListener('click', () => {
       stopConfetti();
       showScreen(screenStart);
     });
 
-    // クリア画面の「もう一度あそぶ」ボタン
     btnReplay.addEventListener('click', () => {
       stopConfetti();
       showScreen(screenStart);
