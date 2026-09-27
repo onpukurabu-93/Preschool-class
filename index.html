@@ -64,7 +64,7 @@
     }
 
     /* =========================================================
-       3. 【原則1対応】CSSだけで実体化する鍵盤表示エリア
+       3. 【原則1】CSSだけで実体化する鍵盤表示エリア
           （kenban1.png / kenban2.png が無くてもCSSで必ず表示）
        ========================================================= */
     .keyboard-wrapper {
@@ -179,7 +179,7 @@
       cursor: grab;
     }
 
-    /* 画像用コンテナ（【原則4対応】回転アニメーションを担当） */
+    /* 画像用コンテナ（【原則4】回転アニメーションを担当） */
     .image-container {
       width: 100%;
       height: 100%;
@@ -189,7 +189,7 @@
       transition: transform 0.2s ease;
     }
 
-    /* 【原則4対応】ステージ2で串団子を「真横（水平）」に90度回転させるCSS */
+    /* 【原則4】ステージ2でお団子（kushidango.png）を「真横（水平）」に90度回転させるCSS */
     .rotate-horizontal {
       transform: rotate(90deg);
     }
@@ -313,14 +313,13 @@
        調整用パラメーター (調整しやすいように集約)
        ========================================================= */
     // 【調整用】黒鍵の正解判定の「あそび（余裕ピクセル）」
-    // 数値を大きくすると、黒鍵から少し離れていても正解になりやすくなります
     const HIT_MARGIN = 45; // 単位: px
 
     // 画像ファイル名指定
     const IMG_STAGE1_BG = "kenban1.png";   // ステージ1の鍵盤背景画像
     const IMG_STAGE2_BG = "kenban2.png";   // ステージ2の鍵盤背景画像
-    const IMG_SAKURANBO  = "sakuranbo.png"; // ステージ1のイラスト
-    const IMG_KUSHIDANGO = "kushidango.png"; // ステージ2のイラスト
+    const IMG_SAKURANBO  = "sakuranbo.png"; // ステージ1のイラスト（そのままの向き）
+    const IMG_KUSHIDANGO = "kushidango.png"; // ステージ2のイラスト（CSSで90度回転）
 
     /* =========================================================
        ゲーム状態管理変数
@@ -342,11 +341,14 @@
     const rewardScreen = document.getElementById('reward-screen');
 
     /* =========================================================
-       【原則5対応】Web Audio API と iOS Safari制限完全回避コード
+       【原則5＆音声ナビゲーション対応】
+       Web Audio API & SpeechSynthesis iOS解放コード
        ========================================================= */
     let audioCtx = null;
     let isAudioUnlocked = false;
+    let isSpeechUnlocked = false;
 
+    // --- Web Audio API 初期化 ---
     function initAudioContext() {
       if (!audioCtx) {
         const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -356,18 +358,14 @@
       }
     }
 
-    // iOS Safariではユーザーの最初のタッチジェスチャー内で
-    // resume() と「無音再生」を同時に実行することで完全に解放されます
-    function unlockAudio() {
+    // --- 音響＆音声読み上げの解放（iOS/iPadOS対応） ---
+    function unlockMedia() {
+      // 1. Web Audio API 解放
       initAudioContext();
-      if (!audioCtx) return;
-
-      if (audioCtx.state === 'suspended') {
+      if (audioCtx && audioCtx.state === 'suspended') {
         audioCtx.resume();
       }
-
-      if (!isAudioUnlocked) {
-        // 1フレーム分（無音）のバッファーを生成して再生
+      if (audioCtx && !isAudioUnlocked) {
         const buffer = audioCtx.createBuffer(1, 1, 22050);
         const source = audioCtx.createBufferSource();
         source.buffer = buffer;
@@ -375,16 +373,60 @@
         source.start(0);
         isAudioUnlocked = true;
       }
+
+      // 2. SpeechSynthesis（自動音声）解放
+      if ('speechSynthesis' in window && !isSpeechUnlocked) {
+        const dummyUtterance = new SpeechSynthesisUtterance('');
+        dummyUtterance.lang = 'ja-JP';
+        dummyUtterance.volume = 0; // 無音発音でアンロック
+        window.speechSynthesis.speak(dummyUtterance);
+        isSpeechUnlocked = true;
+      }
     }
 
-    // 画面上のどこかをタッチした瞬間にサウンドを解放するイベントを登録
+    // タッチ・クリック時に自動解凍イベントを登録
     ['touchstart', 'touchend', 'pointerdown', 'mousedown'].forEach(eventName => {
-      window.addEventListener(eventName, unlockAudio, { once: true, passive: true });
+      window.addEventListener(eventName, unlockMedia, { once: true, passive: true });
     });
 
+    // --- 日本語の自動音声案内（SpeechSynthesis） ---
+    function speakGuide(text) {
+      if (!('speechSynthesis' in window)) return;
+
+      // 進行中の音声を一旦キャンセル
+      window.speechSynthesis.cancel();
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'ja-JP';
+      utterance.rate = 0.95; // 幼児向けに少しゆったりしたスピード
+      utterance.pitch = 1.25; // 優しく高めのトーン
+
+      // 日本語のボイスが存在すれば選択
+      const voices = window.speechSynthesis.getVoices();
+      const jaVoice = voices.find(v => v.lang.includes('ja') || v.lang.includes('JP'));
+      if (jaVoice) {
+        utterance.voice = jaVoice;
+      }
+
+      // iOS Safariのタイミング調整のため小遅延を入れて再生
+      setTimeout(() => {
+        window.speechSynthesis.speak(utterance);
+      }, 120);
+    }
+
+    // ステージごとのナビゲーション音声を再生
+    function playCurrentGuide() {
+      if (currentStage === 1) {
+        speakGuide("さくらんぼを黒い鍵盤の上に置いてね");
+      } else if (currentStage === 2) {
+        speakGuide("お団子を黒い鍵盤の上に置いてね");
+      }
+    }
+
+    // --- 効果音作成 ---
     // 「ピンポン！」効果音
     function playDingDong() {
-      unlockAudio();
+      unlockMedia();
       if (!audioCtx) return;
 
       const now = audioCtx.currentTime;
@@ -416,7 +458,7 @@
 
     // ステージクリア時：「ファンファーレ！」
     function playFanfare() {
-      unlockAudio();
+      unlockMedia();
       if (!audioCtx) return;
 
       const now = audioCtx.currentTime;
@@ -441,7 +483,7 @@
 
     // 全クリア時：「ジャジャーン！」
     function playGrandTaDa() {
-      unlockAudio();
+      unlockMedia();
       if (!audioCtx) return;
 
       const now = audioCtx.currentTime;
@@ -479,10 +521,10 @@
         itemImg.src = IMG_SAKURANBO;
         emojiFallback.textContent = "🍒";
         
-        // 【原則4対応】さくらんぼは回転なし
+        // さくらんぼは元の向きで表示
         imageContainer.classList.remove('rotate-horizontal');
 
-        // 【原則1対応】白鍵3枚、黒鍵2本の鍵盤枠を生成
+        // 白鍵3枚、黒鍵2本の鍵盤枠を生成
         keyboardWrapper.innerHTML = `
           <div class="piano-keyboard">
             <div class="white-key"></div>
@@ -494,16 +536,20 @@
             </div>
           </div>
         `;
+
+        // 音声ガイド再生
+        playCurrentGuide();
+
       } else if (stageNum === 2) {
         // --- ステージ2：ファソラシ（黒鍵3本・串団子） ---
         keyboardWrapper.style.backgroundImage = `url('${IMG_STAGE2_BG}')`;
         itemImg.src = IMG_KUSHIDANGO;
         emojiFallback.textContent = "🍡";
 
-        // 【原則4対応】串団子の画像をCSSで「真横（水平）」に回転
+        // 【ルール適用】お団子画像をCSSで「真横（水平）」に90度回転
         imageContainer.classList.add('rotate-horizontal');
 
-        // 【原則1対応】白鍵4枚、黒鍵3本の鍵盤枠を生成
+        // 白鍵4枚、黒鍵3本の鍵盤枠を生成
         keyboardWrapper.innerHTML = `
           <div class="piano-keyboard">
             <div class="white-key"></div>
@@ -517,6 +563,10 @@
             </div>
           </div>
         `;
+
+        // 音声ガイド再生
+        playCurrentGuide();
+
       } else if (stageNum === 3) {
         // --- ステージ3：ごほうび画面 ---
         showRewardScreen();
@@ -549,7 +599,7 @@
     }
 
     /* =========================================================
-       【原則3＆4対応】iPad完全対応のタッチ＆ドラッグ処理
+       【原則3＆4】iPad完全対応のタッチ＆ドラッグ処理
        ========================================================= */
     function getEventPos(e) {
       if (e.touches && e.touches.length > 0) {
@@ -559,8 +609,8 @@
     }
 
     function handleDragStart(e) {
-      // iOS AudioContextを起動
-      unlockAudio();
+      // iOS Media (Web Audio & Speech) を解放
+      unlockMedia();
 
       if (isDragging) return;
       isDragging = true;
@@ -596,8 +646,7 @@
       const targetArea = document.getElementById('target-area');
       if (!targetArea) return;
 
-      // 【原則4対応】回転していても getBoundingClientRect() は
-      // 画面上の実際の「外接矩形」を取得するため、中心座標の計算結果は常に正確です
+      // 回転していても getBoundingClientRect() で正しく画面上の外接ボックスを取得
       const itemRect = draggable.getBoundingClientRect();
       const targetRect = targetArea.getBoundingClientRect();
 
@@ -620,14 +669,19 @@
 
         resetDraggablePosition();
 
-        // 3回正解したら次のステージへ進む
         if (successCount >= 3) {
+          // 3回正解したらファンファーレを鳴らして次のステージへ
           setTimeout(() => {
             playFanfare();
             setTimeout(() => {
               loadStage(currentStage + 1);
             }, 900);
           }, 300);
+        } else {
+          // 同じステージ内の次の問題へ進む際、再度音声ガイドで案内
+          setTimeout(() => {
+            playCurrentGuide();
+          }, 600);
         }
       } else {
         // --- 不正解（外れた）処理 ---
@@ -728,13 +782,18 @@
     }
 
     /* =========================================================
-       【原則2対応】iPadで確実に初期化を走らせる二重安全設計
+       【原則2】iPadで確実に初期化を走らせる二重安全設計
        ========================================================= */
     function initGame() {
+      // SpeechSynthesisの音声リストが非同期ロードされるブラウザ対策
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.onvoiceschanged = () => {
+          window.speechSynthesis.getVoices();
+        };
+      }
       loadStage(1);
     }
 
-    // DOMContentLoaded と document.readyState チェックの組み合わせで確実に起動
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', initGame);
     } else {
