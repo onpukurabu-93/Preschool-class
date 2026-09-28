@@ -46,27 +46,46 @@
     /* 右上固定のリセットボタン（↻） */
     #btn-reset {
       position: fixed;
-      top: 15px;
-      right: 15px;
-      width: 58px;
-      height: 58px;
+      top: 12px;
+      right: 12px;
+      width: 62px;
+      height: 62px;
       border-radius: 50%;
       background: #ef4444;
       color: white;
-      font-size: 30px;
+      font-size: 32px;
       font-weight: bold;
-      border: 3px solid white;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      border: 4px solid white;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.22);
       cursor: pointer;
       z-index: 100;
       display: flex;
       justify-content: center;
       align-items: center;
-      transition: transform 0.1s ease;
+      transition: transform 0.15 ease;
     }
 
     #btn-reset:active {
-      transform: scale(0.9);
+      transform: scale(0.88);
+    }
+
+    /* ★ くす玉画面で幼児を誘導する「ピカピカボタン」アニメーション */
+    #btn-reset.pika-pika {
+      animation: pikaPikaGlow 1.2s infinite ease-in-out;
+      border-color: #fffbeb;
+    }
+
+    @keyframes pikaPikaGlow {
+      0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 12px #ef4444, 0 0 25px #f59e0b, 0 0 35px #fef08a;
+        background: #ef4444;
+      }
+      50% {
+        transform: scale(1.18);
+        box-shadow: 0 0 30px #f43f5e, 0 0 50px #fbbf24, 0 0 70px #ffffff;
+        background: #f43f5e;
+      }
     }
 
     /* =========================================================
@@ -80,20 +99,20 @@
 
     .start-card {
       background: rgba(255, 255, 255, 0.95);
-      padding: 3rem 2.5rem;
-      border-radius: 40px;
-      box-shadow: 0 15px 35px rgba(0,0,0,0.12);
+      padding: 3.2rem 2.8rem;
+      border-radius: 44px;
+      box-shadow: 0 16px 38px rgba(0,0,0,0.12);
       border: 5px solid #fbbf24;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 2rem;
+      gap: 2.2rem;
       max-width: 90%;
       width: auto;
     }
 
     .start-title {
-      font-size: clamp(1.8rem, 6vw, 3rem);
+      font-size: clamp(2rem, 6.5vw, 3.2rem);
       color: #d97706;
       font-weight: bold;
       text-shadow: 1px 1px 0px white;
@@ -101,14 +120,14 @@
     }
 
     .btn-tonton {
-      font-size: clamp(1.6rem, 5.5vw, 2.5rem);
-      padding: 1rem 3.5rem;
+      font-size: clamp(1.8rem, 6vw, 2.7rem);
+      padding: 1.1rem 3.8rem;
       border-radius: 50px;
       background: linear-gradient(180deg, #f43f5e 0%, #e11d48 100%);
       color: white;
       font-weight: bold;
       border: none;
-      box-shadow: 0 8px 22px rgba(225, 29, 72, 0.4);
+      box-shadow: 0 8px 25px rgba(225, 29, 72, 0.4);
       animation: pulse 1.8s infinite;
       cursor: pointer;
       white-space: nowrap;
@@ -116,18 +135,18 @@
 
     @keyframes pulse {
       0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.05); }
+      50% { transform: scale(1.06); }
     }
 
     /* =========================================================
-       3. メインゲーム画面（iPad横画面：極限まで大迫力化）
+       3. メインゲーム画面（iPad横画面：限界突破の最大サイズ）
        ========================================================= */
     #screen-game {
       display: none;
       flex-direction: row;
       justify-content: space-between;
       align-items: center;
-      padding: 0.8rem 1.2rem; /* 余白を極限までカット */
+      padding: 0.5rem 1rem; /* 画面全体の余白を極限までカット */
       width: 100vw;
       height: 100vh;
       box-sizing: border-box;
@@ -148,26 +167,26 @@
       z-index: 10;
     }
 
-    /* ドラッグ元の枠（1.3倍拡大に伴い枠も大きく拡大） */
+    /* ドラッグ元の枠（超拡大対応） */
     .source-box {
-      width: 230px;
-      height: 230px;
-      background: rgba(255, 255, 255, 0.75);
+      width: 280px;
+      height: 280px;
+      background: rgba(255, 255, 255, 0.78);
       border: 4px dashed #38bdf8;
-      border-radius: 32px;
+      border-radius: 36px;
       display: flex;
       justify-content: center;
       align-items: center;
       position: relative;
     }
 
-    /* ★ドラッグ要素（従来のサイズから1.3倍大迫力化！）
-       ステージ1（さくらんぼ）: 110px ➔ 145px
-       ステージ2（お団子）: 175px ➔ 228px
+    /* ★ ドラッグ要素（iPad横画面で超大迫力サイズ化！）
+       ステージ1（さくらんぼ）: 165px
+       ステージ2（お団子）: 290px（黒鍵3本を包み込む特大サイズ！）
     */
     #draggable {
-      width: 145px;
-      height: 145px;
+      width: 165px;
+      height: 165px;
       cursor: grab;
       touch-action: none;
       position: absolute;
@@ -178,8 +197,8 @@
     }
 
     #draggable.stage2-size {
-      width: 228px;
-      height: 228px;
+      width: 290px;
+      height: 290px;
     }
 
     #draggable:active {
@@ -203,11 +222,11 @@
       height: 100%;
       object-fit: contain;
       pointer-events: none;
-      filter: drop-shadow(0 6px 12px rgba(0,0,0,0.22));
+      filter: drop-shadow(0 6px 14px rgba(0,0,0,0.22));
     }
 
     .emoji-fallback {
-      font-size: 100px;
+      font-size: 110px;
       line-height: 1;
       display: none;
     }
@@ -233,8 +252,8 @@
     #keyboard-wrapper {
       position: relative;
       width: 100%;
-      max-width: 780px; /* iPad横画面での限界サイズまで拡大 */
-      height: 440px;
+      max-width: 860px; /* 大画面向け限界突破サイズ */
+      height: 480px;
       background-size: contain;
       background-position: center;
       background-repeat: no-repeat;
@@ -248,9 +267,9 @@
       display: flex;
       position: relative;
       background: #1e293b;
-      padding: 10px;
-      border-radius: 20px;
-      box-shadow: 0 15px 35px rgba(0,0,0,0.22);
+      padding: 12px;
+      border-radius: 24px;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.24);
     }
 
     #keyboard-wrapper.has-custom-bg .piano-keyboard {
@@ -258,19 +277,19 @@
     }
 
     .white-key {
-      width: 95px;
-      height: 310px;
+      width: 108px;
+      height: 350px;
       background: white;
       border: 3px solid #cbd5e1;
-      border-radius: 0 0 12px 12px;
-      margin: 0 3px;
+      border-radius: 0 0 14px 14px;
+      margin: 0 4px;
     }
 
     .black-keys-target {
       position: absolute;
-      top: 10px;
+      top: 12px;
       display: flex;
-      gap: 16px;
+      gap: 18px;
       padding: 0;
       background: transparent !important;
       border: none !important;
@@ -280,22 +299,23 @@
     }
 
     .stage1-target {
-      left: 115px;
-      width: 140px;
-      height: 180px;
+      left: 130px;
+      width: 160px;
+      height: 200px;
     }
 
+    /* お団子特大化に合わせてヒット判定ターゲット枠も拡大 */
     .stage2-target {
-      left: 210px;
-      width: 220px;
-      height: 180px;
+      left: 235px;
+      width: 250px;
+      height: 200px;
     }
 
     .black-key {
-      width: 58px;
-      height: 180px;
+      width: 66px;
+      height: 200px;
       background: #0f172a;
-      border-radius: 0 0 8px 8px;
+      border-radius: 0 0 10px 10px;
     }
 
     #keyboard-wrapper.has-custom-bg .black-key {
@@ -328,13 +348,13 @@
     }
 
     .tray-container {
-      width: 180px;
-      height: 340px;
+      width: 200px;
+      height: 380px;
       background: rgba(255, 255, 255, 0.92);
       border: 5px solid #f59e0b;
-      border-radius: 36px;
+      border-radius: 40px;
       box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-      padding: 16px;
+      padding: 18px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -342,7 +362,7 @@
     }
 
     .tray-title {
-      font-size: 1.2rem;
+      font-size: 1.3rem;
       font-weight: bold;
       color: #d97706;
       margin-bottom: 4px;
@@ -357,10 +377,10 @@
       align-items: center;
     }
 
-    /* 1.3倍スケール対応のお皿アイテム（約85px） */
+    /* 超拡大対応のお皿アイテム（約95px） */
     .tray-item {
-      width: 85px;
-      height: 85px;
+      width: 95px;
+      height: 95px;
       object-fit: contain;
       animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
@@ -411,18 +431,18 @@
     }
 
     .reward-emoji {
-      font-size: 6rem;
+      font-size: 6.5rem;
       animation: bounce 1s infinite alternate;
     }
 
     @keyframes bounce {
       0% { transform: translateY(0); }
-      100% { transform: translateY(-18px); }
+      100% { transform: translateY(-20px); }
     }
 
     .btn-replay {
-      font-size: clamp(1.3rem, 4.5vw, 1.8rem);
-      padding: 0.9rem 3.2rem;
+      font-size: clamp(1.4rem, 4.8vw, 2rem);
+      padding: 1rem 3.5rem;
       border-radius: 45px;
       background: #10b981;
       color: white;
@@ -449,50 +469,51 @@
       }
 
       .source-box {
-        width: 170px;
-        height: 170px;
+        width: 180px;
+        height: 180px;
       }
 
+      /* iPhone（縦画面）: さくらんぼ＝黄金の120px、お団子＝少し大きめの195px */
       #draggable {
         width: 120px;
         height: 120px;
       }
 
       #draggable.stage2-size {
-        width: 175px;
-        height: 175px;
+        width: 195px;
+        height: 195px;
       }
 
       #keyboard-wrapper {
         max-width: 100%;
-        height: 280px;
+        height: 290px;
       }
 
       .white-key {
-        width: 65px;
-        height: 200px;
+        width: 68px;
+        height: 210px;
       }
 
       .black-key {
-        width: 40px;
-        height: 115px;
+        width: 42px;
+        height: 120px;
       }
 
       .stage1-target {
-        left: 80px;
-        width: 95px;
-        height: 115px;
+        left: 82px;
+        width: 100px;
+        height: 120px;
       }
 
       .stage2-target {
-        left: 145px;
-        width: 150px;
-        height: 115px;
+        left: 150px;
+        width: 160px;
+        height: 120px;
       }
 
       .tray-container {
-        width: 310px;
-        height: 115px;
+        width: 320px;
+        height: 120px;
         flex-direction: column;
       }
 
@@ -561,7 +582,7 @@
   </section>
 
   <!-- =========================================================
-     JavaScript（ずんだもんMP3音声再生・連打完全ガード・判定ロジック）
+     JavaScript（ずんだもんMP3音声制御・ピカピカ連動・連打完全ガード）
      ========================================================= -->
   <script>
     /* 1. 画像探査リスト */
@@ -573,7 +594,7 @@
     /* 2. ゲーム状態変数 */
     let currentStage = 1;  // 1: さくらんぼ, 2: お団子
     let successCount = 0;  // 正解数 (0〜3)
-    let isLocked = false;  // ★連打・二重操作防止フラグ
+    let isLocked = false;  // ★連打・二重操作防止ガードフラグ
 
     let loadedPathSakuranbo = "";
     let loadedPathKushidango = "";
@@ -597,11 +618,10 @@
     const keyboardWrapper = document.getElementById('keyboard-wrapper');
     const trayArea = document.getElementById('tray-area');
 
-    /* 3. MP3音声再生エンジン（iOSタッチガード解除機能つき） */
+    /* 3. MP3音声再生エンジン（完全終了保証 ＆ iOSタッチ制限自動解除機能） */
     const audioPlayer = new Audio();
 
     function unlockAudioIOS() {
-      // iOS/iPadOSで無音で再生・停止を行い、以降の自動再生制限を解除
       audioPlayer.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==";
       audioPlayer.play().catch(() => {});
     }
@@ -611,22 +631,40 @@
       audioPlayer.currentTime = 0;
       audioPlayer.src = filename;
 
+      let hasExecutedCallback = false;
+
+      const executeCallback = () => {
+        if (!hasExecutedCallback) {
+          hasExecutedCallback = true;
+          audioPlayer.onended = null;
+          audioPlayer.onerror = null;
+          if (onEndedCallback) onEndedCallback();
+        }
+      };
+
       if (onEndedCallback) {
-        audioPlayer.onended = onEndedCallback;
+        audioPlayer.onended = executeCallback;
+        audioPlayer.onerror = executeCallback;
       } else {
         audioPlayer.onended = null;
+        audioPlayer.onerror = null;
       }
 
       audioPlayer.play().catch(err => {
-        console.log("Audio play prevented or file missing: " + filename, err);
-        if (onEndedCallback) onEndedCallback();
+        console.log("Audio play failed/missing: " + filename, err);
+        executeCallback();
       });
     }
 
-    /* 4. 画面切り替え */
+    /* 4. 画面切り替え & ピカピカボタン状態制御 */
     function showScreen(targetScreen) {
       [screenStart, screenGame, screenReward].forEach(s => s.classList.remove('active'));
       targetScreen.classList.add('active');
+
+      // くす玉画面以外ではピカピカ点滅を解除
+      if (targetScreen !== screenReward) {
+        btnReset.classList.remove('pika-pika');
+      }
     }
 
     /* 5. 画像自動探査読み込み */
@@ -687,7 +725,7 @@
     function startStage(stageNum) {
       currentStage = stageNum;
       successCount = 0;
-      isLocked = false; // ★ステージ切り替え完了で操作ロック解除
+      isLocked = false; // ★ステージ準備完了で操作ロックを解除
       trayArea.innerHTML = '';
       resetDraggablePosition();
 
@@ -718,7 +756,7 @@
         playMp3("start1.mp3");
 
       } else if (stageNum === 2) {
-        // ステージ2：お団子（大迫力サイズ & 全工程横向き）
+        // ステージ2：お団子（超大迫力サイズ & 全工程横向き）
         draggable.classList.add('stage2-size');
         itemImg.classList.add('is-dango');
 
@@ -772,7 +810,7 @@
 
     function handleDragStart(e) {
       unlockAudioIOS();
-      if (isDragging || isLocked) return; // ★ロック状態なら指のタップを完全無視
+      if (isDragging || isLocked) return; // ★操作ロック中（isLocked）は完全無視
       isDragging = true;
 
       draggable.classList.remove('snap-back');
@@ -808,8 +846,8 @@
       const itemCenterX = itemRect.left + itemRect.width / 2;
       const itemCenterY = itemRect.top + itemRect.height / 2;
 
-      /* 【黒鍵の真上・絶対厳格判定】 */
-      const MARGIN_X = 15;
+      /* 【黒鍵の真上・厳格ミリ単位判定】 */
+      const MARGIN_X = 18;
       const MARGIN_Y_TOP = 10;
       const MARGIN_Y_BOTTOM = -10;
 
@@ -834,15 +872,18 @@
           isLocked = true;
 
           if (currentStage === 1) {
-            // ステージ1クリア：「clear1.mp3」再生後に自動でステージ2へ
+            /* ★ clear1.mp3（次はお団子を乗せてね！）を【最後まで再生し終わってから】自動でステージ2へ */
             playMp3("clear1.mp3", () => {
               setTimeout(() => {
                 startStage(2);
-              }, 400);
+              }, 300);
             });
           } else if (currentStage === 2) {
-            // ステージ2（全クリア）：「clear2.mp3」再生開始と同時・直後にくす玉画面へ！
-            playMp3("clear2.mp3");
+            /* 全クリア：「clear2.mp3」再生後にくす玉画面へ移行し「retry.mp3」を続けて再生 */
+            playMp3("clear2.mp3", () => {
+              playMp3("retry.mp3"); // セリフ：「もう一度遊ぶなら、ピカピカボタンを 押してね！」
+            });
+
             setTimeout(() => {
               showRewardScreen();
             }, 300);
@@ -850,7 +891,7 @@
         }
 
       } else {
-        // 不正解（白鍵などの上）：スッと元の枠へ戻る
+        // 不正解：元の位置へスッと戻る
         draggable.classList.add('snap-back');
         currentX = 0;
         currentY = 0;
@@ -874,7 +915,7 @@
     window.addEventListener('mousemove', handleDragMove);
     window.addEventListener('mouseup', handleDragEnd);
 
-    /* 8. くす玉・紙吹雪演出 */
+    /* 8. くus玉・紙吹雪演出 ＆ ピカピカボタン発光処理 */
     const canvas = document.getElementById('confetti-canvas');
     const ctx = canvas.getContext('2d');
     let particles = [];
@@ -882,6 +923,7 @@
 
     function showRewardScreen() {
       showScreen(screenReward);
+      btnReset.classList.add('pika-pika'); // ★右上のリセットボタンをピカピカ点滅（発光）させる！
       startConfetti();
     }
 
@@ -896,7 +938,7 @@
       particles = [];
       const colors = ['#f43f5e', '#0ea5e9', '#eab308', '#22c55e', '#a855f7', '#ec4899'];
 
-      for (let i = 0; i < 110; i++) {
+      for (let i = 0; i < 120; i++) {
         particles.push({
           x: Math.random() * canvas.width,
           y: Math.random() * canvas.height - canvas.height,
