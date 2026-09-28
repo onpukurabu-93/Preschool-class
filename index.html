@@ -48,15 +48,15 @@
       position: fixed;
       top: 15px;
       right: 15px;
-      width: 54px;
-      height: 54px;
+      width: 58px;
+      height: 58px;
       border-radius: 50%;
       background: #ef4444;
       color: white;
-      font-size: 28px;
+      font-size: 30px;
       font-weight: bold;
       border: 3px solid white;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
       cursor: pointer;
       z-index: 100;
       display: flex;
@@ -79,21 +79,21 @@
     }
 
     .start-card {
-      background: rgba(255, 255, 255, 0.94);
-      padding: 2.5rem 2rem;
-      border-radius: 36px;
-      box-shadow: 0 12px 30px rgba(0,0,0,0.12);
-      border: 4px solid #fbbf24;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 3rem 2.5rem;
+      border-radius: 40px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.12);
+      border: 5px solid #fbbf24;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 1.8rem;
+      gap: 2rem;
       max-width: 90%;
       width: auto;
     }
 
     .start-title {
-      font-size: clamp(1.6rem, 5.5vw, 2.6rem);
+      font-size: clamp(1.8rem, 6vw, 3rem);
       color: #d97706;
       font-weight: bold;
       text-shadow: 1px 1px 0px white;
@@ -101,14 +101,14 @@
     }
 
     .btn-tonton {
-      font-size: clamp(1.5rem, 5vw, 2.2rem);
-      padding: 0.9rem 3rem;
+      font-size: clamp(1.6rem, 5.5vw, 2.5rem);
+      padding: 1rem 3.5rem;
       border-radius: 50px;
       background: linear-gradient(180deg, #f43f5e 0%, #e11d48 100%);
       color: white;
       font-weight: bold;
       border: none;
-      box-shadow: 0 8px 20px rgba(225, 29, 72, 0.4);
+      box-shadow: 0 8px 22px rgba(225, 29, 72, 0.4);
       animation: pulse 1.8s infinite;
       cursor: pointer;
       white-space: nowrap;
@@ -120,14 +120,14 @@
     }
 
     /* =========================================================
-       3. メインゲーム画面（レイアウト）
+       3. メインゲーム画面（iPad横画面：極限まで大迫力化）
        ========================================================= */
     #screen-game {
       display: none;
       flex-direction: row;
       justify-content: space-between;
       align-items: center;
-      padding: 1.5rem 2rem;
+      padding: 0.8rem 1.2rem; /* 余白を極限までカット */
       width: 100vw;
       height: 100vh;
       box-sizing: border-box;
@@ -139,7 +139,7 @@
 
     /* --- 左エリア：ドラッグ元 --- */
     .game-sidebar-left {
-      width: 24%;
+      width: 25%;
       height: 100%;
       display: flex;
       flex-direction: column;
@@ -148,22 +148,26 @@
       z-index: 10;
     }
 
+    /* ドラッグ元の枠（1.3倍拡大に伴い枠も大きく拡大） */
     .source-box {
-      width: 160px;
-      height: 160px;
+      width: 230px;
+      height: 230px;
       background: rgba(255, 255, 255, 0.75);
-      border: 3px dashed #38bdf8;
-      border-radius: 28px;
+      border: 4px dashed #38bdf8;
+      border-radius: 32px;
       display: flex;
       justify-content: center;
       align-items: center;
       position: relative;
     }
 
-    /* ドラッグ要素（ステージ1: 110px / ステージ2: 175px 大迫力サイズ） */
+    /* ★ドラッグ要素（従来のサイズから1.3倍大迫力化！）
+       ステージ1（さくらんぼ）: 110px ➔ 145px
+       ステージ2（お団子）: 175px ➔ 228px
+    */
     #draggable {
-      width: 110px;
-      height: 110px;
+      width: 145px;
+      height: 145px;
       cursor: grab;
       touch-action: none;
       position: absolute;
@@ -174,8 +178,8 @@
     }
 
     #draggable.stage2-size {
-      width: 175px;
-      height: 175px;
+      width: 228px;
+      height: 228px;
     }
 
     #draggable:active {
@@ -199,34 +203,27 @@
       height: 100%;
       object-fit: contain;
       pointer-events: none;
-      filter: drop-shadow(0 4px 10px rgba(0,0,0,0.22));
+      filter: drop-shadow(0 6px 12px rgba(0,0,0,0.22));
     }
 
     .emoji-fallback {
-      font-size: 80px;
+      font-size: 100px;
       line-height: 1;
       display: none;
     }
 
-    /* --- お団子の回転ロジック --- */
+    /* --- お団子の回転制御（全工程横向き「三」の固定） --- */
     .is-dango {
-      transform: rotate(90deg); /* 運ぶときは常に横向き */
+      transform: rotate(90deg); /* 移動中・箱の中は常に横向き */
     }
 
     .tray-item-dango {
-      transform: rotate(90deg); /* iPad（横画面）お皿：横向き「三」 */
+      transform: rotate(90deg); /* iPad（横画面）お皿の上も一切回さず横向き「三」 */
     }
 
-    @media (orientation: portrait) {
-      /* iPhone（縦画面）のときのみ、お皿の中のお団子を縦向き「川」にする */
-      .tray-item-dango {
-        transform: rotate(0deg);
-      }
-    }
-
-    /* --- 中央エリア：鍵盤 --- */
+    /* --- 中央エリア：鍵盤（iPadで最大サイズ化） --- */
     .game-center {
-      width: 50%;
+      width: 52%;
       height: 100%;
       display: flex;
       justify-content: center;
@@ -236,24 +233,24 @@
     #keyboard-wrapper {
       position: relative;
       width: 100%;
-      max-width: 520px;
-      height: 320px;
+      max-width: 780px; /* iPad横画面での限界サイズまで拡大 */
+      height: 440px;
       background-size: contain;
       background-position: center;
       background-repeat: no-repeat;
       display: flex;
       justify-content: center;
       align-items: flex-end;
-      padding-bottom: 10px;
+      padding-bottom: 12px;
     }
 
     .piano-keyboard {
       display: flex;
       position: relative;
       background: #1e293b;
-      padding: 8px;
-      border-radius: 16px;
-      box-shadow: 0 12px 30px rgba(0,0,0,0.2);
+      padding: 10px;
+      border-radius: 20px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.22);
     }
 
     #keyboard-wrapper.has-custom-bg .piano-keyboard {
@@ -261,19 +258,19 @@
     }
 
     .white-key {
-      width: 70px;
-      height: 220px;
+      width: 95px;
+      height: 310px;
       background: white;
-      border: 2px solid #cbd5e1;
-      border-radius: 0 0 8px 8px;
-      margin: 0 2px;
+      border: 3px solid #cbd5e1;
+      border-radius: 0 0 12px 12px;
+      margin: 0 3px;
     }
 
     .black-keys-target {
       position: absolute;
-      top: 8px;
+      top: 10px;
       display: flex;
-      gap: 12px;
+      gap: 16px;
       padding: 0;
       background: transparent !important;
       border: none !important;
@@ -283,28 +280,29 @@
     }
 
     .stage1-target {
-      left: 85px;
-      width: 100px;
-      height: 125px;
+      left: 115px;
+      width: 140px;
+      height: 180px;
     }
 
     .stage2-target {
-      left: 150px;
-      width: 160px;
-      height: 125px;
+      left: 210px;
+      width: 220px;
+      height: 180px;
     }
 
     .black-key {
-      width: 42px;
-      height: 125px;
+      width: 58px;
+      height: 180px;
       background: #0f172a;
-      border-radius: 0 0 6px 6px;
+      border-radius: 0 0 8px 8px;
     }
 
     #keyboard-wrapper.has-custom-bg .black-key {
       opacity: 0;
     }
 
+    /* 背景画像適用時の精密ヒットエリア配置 */
     #keyboard-wrapper.has-custom-bg .stage1-target {
       top: 12%;
       left: 36%;
@@ -321,7 +319,7 @@
 
     /* --- 右エリア：ごほうびトレイ（お皿） --- */
     .game-sidebar-right {
-      width: 24%;
+      width: 23%;
       height: 100%;
       display: flex;
       flex-direction: column;
@@ -330,13 +328,13 @@
     }
 
     .tray-container {
-      width: 150px;
-      height: 260px;
-      background: rgba(255, 255, 255, 0.9);
-      border: 4px solid #f59e0b;
-      border-radius: 30px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-      padding: 12px;
+      width: 180px;
+      height: 340px;
+      background: rgba(255, 255, 255, 0.92);
+      border: 5px solid #f59e0b;
+      border-radius: 36px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      padding: 16px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -344,10 +342,10 @@
     }
 
     .tray-title {
-      font-size: 1rem;
+      font-size: 1.2rem;
       font-weight: bold;
       color: #d97706;
-      margin-bottom: 2px;
+      margin-bottom: 4px;
     }
 
     #tray-area {
@@ -359,11 +357,12 @@
       align-items: center;
     }
 
+    /* 1.3倍スケール対応のお皿アイテム（約85px） */
     .tray-item {
-      width: 65px;
-      height: 65px;
+      width: 85px;
+      height: 85px;
       object-fit: contain;
-      animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
     @keyframes popIn {
@@ -393,49 +392,49 @@
     .reward-content {
       position: relative;
       z-index: 32;
-      background: rgba(255, 255, 255, 0.94);
-      padding: 2.5rem 3.5rem;
-      border-radius: 40px;
-      box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+      background: rgba(255, 255, 255, 0.95);
+      padding: 3rem 4rem;
+      border-radius: 48px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.15);
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 1.2rem;
+      gap: 1.5rem;
       max-width: 90%;
     }
 
     .reward-title {
-      font-size: clamp(1.8rem, 6vw, 2.8rem);
+      font-size: clamp(2rem, 6.5vw, 3.2rem);
       color: #e11d48;
       font-weight: bold;
       white-space: nowrap;
     }
 
     .reward-emoji {
-      font-size: 5rem;
+      font-size: 6rem;
       animation: bounce 1s infinite alternate;
     }
 
     @keyframes bounce {
       0% { transform: translateY(0); }
-      100% { transform: translateY(-15px); }
+      100% { transform: translateY(-18px); }
     }
 
     .btn-replay {
-      font-size: clamp(1.2rem, 4vw, 1.6rem);
-      padding: 0.8rem 2.8rem;
-      border-radius: 40px;
+      font-size: clamp(1.3rem, 4.5vw, 1.8rem);
+      padding: 0.9rem 3.2rem;
+      border-radius: 45px;
       background: #10b981;
       color: white;
       font-weight: bold;
       border: none;
-      box-shadow: 0 6px 15px rgba(16, 185, 129, 0.4);
+      box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
       cursor: pointer;
       white-space: nowrap;
     }
 
     /* =========================================================
-       5. 縦画面（iPhone等）でのレスポンシブ配置
+       5. iPhone（縦画面）最適化レスポンシブ
        ========================================================= */
     @media (orientation: portrait) {
       #screen-game {
@@ -450,18 +449,60 @@
       }
 
       .source-box {
-        width: 140px;
-        height: 140px;
+        width: 170px;
+        height: 170px;
+      }
+
+      #draggable {
+        width: 120px;
+        height: 120px;
+      }
+
+      #draggable.stage2-size {
+        width: 175px;
+        height: 175px;
+      }
+
+      #keyboard-wrapper {
+        max-width: 100%;
+        height: 280px;
+      }
+
+      .white-key {
+        width: 65px;
+        height: 200px;
+      }
+
+      .black-key {
+        width: 40px;
+        height: 115px;
+      }
+
+      .stage1-target {
+        left: 80px;
+        width: 95px;
+        height: 115px;
+      }
+
+      .stage2-target {
+        left: 145px;
+        width: 150px;
+        height: 115px;
       }
 
       .tray-container {
-        width: 290px;
-        height: 110px;
+        width: 310px;
+        height: 115px;
         flex-direction: column;
       }
 
       #tray-area {
-        flex-direction: row; /* iPhone（縦画面）時：横に並べて「川」の形を作る */
+        flex-direction: row; /* iPhone（縦画面）時：横に並べる */
+      }
+
+      /* iPhone（縦画面）のときのみ、お皿の中のお団子を縦向き「川」にする */
+      .tray-item-dango {
+        transform: rotate(0deg);
       }
     }
   </style>
@@ -496,7 +537,7 @@
     <!-- 中央：鍵盤グラフィック -->
     <div class="game-center">
       <div id="keyboard-wrapper">
-        <!-- JSで動的に鍵盤および透明判定ターゲット枠を配置 -->
+        <!-- JSで動的に鍵盤および判定枠を生成 -->
       </div>
     </div>
 
@@ -520,19 +561,19 @@
   </section>
 
   <!-- =========================================================
-     JavaScript（動作制御・音声・黒鍵直上判定・連打ガード制御）
+     JavaScript（ずんだもんMP3音声再生・連打完全ガード・判定ロジック）
      ========================================================= -->
   <script>
     /* 1. 画像探査リスト */
-    const FILES_STAGE1_BG = ["kenban1.png", "Kenban1.png", "kenban1.PNG", "Kenban1.PNG", "KENBAN1.PNG", "kenban1.jpg", "Kenban1.jpg"];
-    const FILES_STAGE2_BG = ["kenban2.png", "Kenban2.png", "kenban2.PNG", "Kenban2.PNG", "KENBAN2.PNG", "kenban2.jpg", "Kenban2.jpg"];
+    const FILES_STAGE1_BG = ["kenban1.png", "Kenban1.png", "kenban1.PNG", "Kenban1.PNG", "KENBAN1.PNG", "kenban1.jpg"];
+    const FILES_STAGE2_BG = ["kenban2.png", "Kenban2.png", "kenban2.PNG", "Kenban2.PNG", "KENBAN2.PNG", "kenban2.jpg"];
     const FILES_SAKURANBO = ["sakuranbo.png", "Sakuranbo.png", "sakuranbo.PNG", "Sakuranbo.PNG", "SAKURANBO.PNG", "sakuranbo.jpg"];
     const FILES_KUSHIDANGO = ["kushidango.png", "Kushidango.png", "kushidango.PNG", "Kushidango.PNG", "KUSHIDANGO.PNG", "kushidango.jpg"];
 
     /* 2. ゲーム状態変数 */
     let currentStage = 1;  // 1: さくらんぼ, 2: お団子
     let successCount = 0;  // 正解数 (0〜3)
-    let isLocked = false;  // ★連打防止フラグ（クリア演出・ステージ切り替え中のドラッグガード）
+    let isLocked = false;  // ★連打・二重操作防止フラグ
 
     let loadedPathSakuranbo = "";
     let loadedPathKushidango = "";
@@ -556,13 +597,39 @@
     const keyboardWrapper = document.getElementById('keyboard-wrapper');
     const trayArea = document.getElementById('tray-area');
 
-    /* 3. 画面切り替え */
+    /* 3. MP3音声再生エンジン（iOSタッチガード解除機能つき） */
+    const audioPlayer = new Audio();
+
+    function unlockAudioIOS() {
+      // iOS/iPadOSで無音で再生・停止を行い、以降の自動再生制限を解除
+      audioPlayer.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==";
+      audioPlayer.play().catch(() => {});
+    }
+
+    function playMp3(filename, onEndedCallback) {
+      audioPlayer.pause();
+      audioPlayer.currentTime = 0;
+      audioPlayer.src = filename;
+
+      if (onEndedCallback) {
+        audioPlayer.onended = onEndedCallback;
+      } else {
+        audioPlayer.onended = null;
+      }
+
+      audioPlayer.play().catch(err => {
+        console.log("Audio play prevented or file missing: " + filename, err);
+        if (onEndedCallback) onEndedCallback();
+      });
+    }
+
+    /* 4. 画面切り替え */
     function showScreen(targetScreen) {
       [screenStart, screenGame, screenReward].forEach(s => s.classList.remove('active'));
       targetScreen.classList.add('active');
     }
 
-    /* 4. 画像自動探査読み込み */
+    /* 5. 画像自動探査読み込み */
     function loadImageWithFallback(imgElement, candidates, fallbackEmoji, onSuccessCallback) {
       let index = 0;
       imgElement.style.display = 'block';
@@ -616,129 +683,11 @@
       tryNext();
     }
 
-    /* 5. Web Audio API & 音声案内 */
-    let audioCtx = null;
-    let isAudioUnlocked = false;
-
-    function initAudioContext() {
-      if (!audioCtx) {
-        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-        if (AudioContextClass) audioCtx = new AudioContextClass();
-      }
-    }
-
-    function unlockAudio() {
-      initAudioContext();
-      if (audioCtx && audioCtx.state === 'suspended') {
-        audioCtx.resume();
-      }
-      if (audioCtx && !isAudioUnlocked) {
-        const buffer = audioCtx.createBuffer(1, 1, 22050);
-        const source = audioCtx.createBufferSource();
-        source.buffer = buffer;
-        source.connect(audioCtx.destination);
-        source.start(0);
-        isAudioUnlocked = true;
-      }
-      if ('speechSynthesis' in window) {
-        const dummy = new SpeechSynthesisUtterance('');
-        dummy.volume = 0;
-        window.speechSynthesis.speak(dummy);
-      }
-    }
-
-    function speakGuide(text) {
-      if (!('speechSynthesis' in window)) return;
-      window.speechSynthesis.cancel();
-
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'ja-JP';
-      utterance.rate = 0.92;
-      utterance.pitch = 1.25;
-
-      const voices = window.speechSynthesis.getVoices();
-      const jaVoice = voices.find(v => v.lang.includes('ja') || v.lang.includes('JP'));
-      if (jaVoice) utterance.voice = jaVoice;
-
-      setTimeout(() => {
-        window.speechSynthesis.speak(utterance);
-      }, 150);
-    }
-
-    function playDingDong() {
-      unlockAudio();
-      if (!audioCtx) return;
-      const now = audioCtx.currentTime;
-
-      const osc1 = audioCtx.createOscillator();
-      const gain1 = audioCtx.createGain();
-      osc1.type = 'sine';
-      osc1.frequency.setValueAtTime(1318.51, now);
-      gain1.gain.setValueAtTime(0.35, now);
-      gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
-      osc1.connect(gain1);
-      gain1.connect(audioCtx.destination);
-      osc1.start(now);
-      osc1.stop(now + 0.4);
-
-      const osc2 = audioCtx.createOscillator();
-      const gain2 = audioCtx.createGain();
-      osc2.type = 'sine';
-      osc2.frequency.setValueAtTime(1046.50, now + 0.15);
-      gain2.gain.setValueAtTime(0.35, now + 0.15);
-      gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
-      osc2.connect(gain2);
-      gain2.connect(audioCtx.destination);
-      osc2.start(now + 0.15);
-      osc2.stop(now + 0.7);
-    }
-
-    function playFanfare() {
-      unlockAudio();
-      if (!audioCtx) return;
-      const now = audioCtx.currentTime;
-      const notes = [523.25, 659.25, 783.99, 1046.50];
-
-      notes.forEach((freq, idx) => {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(freq, now + idx * 0.12);
-        const duration = (idx === notes.length - 1) ? 0.7 : 0.12;
-        gain.gain.setValueAtTime(0.3, now + idx * 0.12);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.12 + duration);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start(now + idx * 0.12);
-        osc.stop(now + idx * 0.12 + duration);
-      });
-    }
-
-    function playGrandTaDa() {
-      unlockAudio();
-      if (!audioCtx) return;
-      const now = audioCtx.currentTime;
-      const chord = [261.63, 329.63, 392.00, 523.25, 659.25, 783.99, 1046.50];
-
-      chord.forEach((freq) => {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, now);
-        gain.gain.setValueAtTime(0.18, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 2.5);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start(now);
-        osc.stop(now + 2.5);
-      });
-    }
-
-    /* 6. ステージ構築 */
+    /* 6. ステージ構築 ＆ ずんだもん音声連動 */
     function startStage(stageNum) {
       currentStage = stageNum;
       successCount = 0;
-      isLocked = false; // ★ステージ準備完了に伴い操作ロック解除
+      isLocked = false; // ★ステージ切り替え完了で操作ロック解除
       trayArea.innerHTML = '';
       resetDraggablePosition();
 
@@ -765,10 +714,11 @@
         `;
 
         showScreen(screenGame);
-        speakGuide("さくらんぼを くろい けんばんの上に おいてね");
+        // ★スタート音「start1.mp3」再生（さくらんぼを 黒い鍵盤の上に 3つ乗せてね！）
+        playMp3("start1.mp3");
 
       } else if (stageNum === 2) {
-        // ステージ2：お団子（大迫力サイズ & 運ぶ時は常に横向き）
+        // ステージ2：お団子（大迫力サイズ & 全工程横向き）
         draggable.classList.add('stage2-size');
         itemImg.classList.add('is-dango');
 
@@ -792,7 +742,8 @@
         `;
 
         showScreen(screenGame);
-        speakGuide("つぎはおだんごだよ！くろい けんばんの上に おいてね");
+        // ★スタート音「start2.mp3」再生（お団子を 黒い鍵盤の上に 3つ乗せてね！）
+        playMp3("start2.mp3");
       }
     }
 
@@ -811,7 +762,7 @@
       trayArea.appendChild(trayImg);
     }
 
-    /* 7. ドラッグ＆ドロップおよび判定 */
+    /* 7. ドラッグ＆ドロップおよび黒鍵ミリ単位判定 */
     function getEventPos(e) {
       if (e.touches && e.touches.length > 0) {
         return { x: e.touches[0].clientX, y: e.touches[0].clientY };
@@ -820,8 +771,8 @@
     }
 
     function handleDragStart(e) {
-      unlockAudio();
-      if (isDragging || isLocked) return; // ★ロック状態（isLocked）なら操作を無視
+      unlockAudioIOS();
+      if (isDragging || isLocked) return; // ★ロック状態なら指のタップを完全無視
       isDragging = true;
 
       draggable.classList.remove('snap-back');
@@ -857,7 +808,7 @@
       const itemCenterX = itemRect.left + itemRect.width / 2;
       const itemCenterY = itemRect.top + itemRect.height / 2;
 
-      /* 【黒鍵の真上判定】 */
+      /* 【黒鍵の真上・絶対厳格判定】 */
       const MARGIN_X = 15;
       const MARGIN_Y_TOP = 10;
       const MARGIN_Y_BOTTOM = -10;
@@ -869,38 +820,37 @@
         itemCenterY <= (targetRect.bottom + MARGIN_Y_BOTTOM);
 
       if (isHit) {
-        // 正解（黒鍵の真上）
-        playDingDong();
+        // 正解（黒鍵の上に完璧に乗せた）
         successCount++;
         addItemToTray();
         resetDraggablePosition();
 
-        if (successCount >= 3) {
-          isLocked = true; // ★ 3回達成した瞬間に画面のドラッグ操作を完全ロック！
+        if (successCount === 1) {
+          playMp3("success1.mp3"); // セリフ：「1つできたね！」
+        } else if (successCount === 2) {
+          playMp3("success2.mp3"); // セリフ：「2つできたね！」
+        } else if (successCount >= 3) {
+          /* ★ 3回成功した瞬間に操作を完全ロック（連打バグ徹底ガード） */
+          isLocked = true;
 
-          setTimeout(() => {
-            playFanfare();
-
-            if (currentStage === 1) {
+          if (currentStage === 1) {
+            // ステージ1クリア：「clear1.mp3」再生後に自動でステージ2へ
+            playMp3("clear1.mp3", () => {
               setTimeout(() => {
-                startStage(2); // ここで内部的に isLocked = false に解除されます
-              }, 1200);
-            } else if (currentStage === 2) {
-              setTimeout(() => {
-                showRewardScreen();
-              }, 1200);
-            }
-          }, 300);
-
-        } else {
-          setTimeout(() => {
-            if (currentStage === 1) speakGuide("もういちど！さくらんぼを おいてね");
-            else speakGuide("もういちど！おだんごを おいてね");
-          }, 500);
+                startStage(2);
+              }, 400);
+            });
+          } else if (currentStage === 2) {
+            // ステージ2（全クリア）：「clear2.mp3」再生開始と同時・直後にくす玉画面へ！
+            playMp3("clear2.mp3");
+            setTimeout(() => {
+              showRewardScreen();
+            }, 300);
+          }
         }
 
       } else {
-        // 不正解：即座に元の位置へスッと戻る
+        // 不正解（白鍵などの上）：スッと元の枠へ戻る
         draggable.classList.add('snap-back');
         currentX = 0;
         currentY = 0;
@@ -932,9 +882,7 @@
 
     function showRewardScreen() {
       showScreen(screenReward);
-      playGrandTaDa();
       startConfetti();
-      speakGuide("ぜんぶクリア！おめでとう！すごーい！");
     }
 
     function resizeCanvas() {
@@ -948,7 +896,7 @@
       particles = [];
       const colors = ['#f43f5e', '#0ea5e9', '#eab308', '#22c55e', '#a855f7', '#ec4899'];
 
-      for (let i = 0; i < 100; i++) {
+      for (let i = 0; i < 110; i++) {
         particles.push({
           x: Math.random() * canvas.width,
           y: Math.random() * canvas.height - canvas.height,
@@ -993,43 +941,30 @@
 
     /* 9. ボタン操作＆リセット処理 */
     btnTonton.addEventListener('click', () => {
-      unlockAudio();
+      unlockAudioIOS();
       startStage(1);
     });
 
     screenStart.addEventListener('click', (e) => {
       if (e.target === screenStart) {
-        unlockAudio();
+        unlockAudioIOS();
         startStage(1);
       }
     });
 
     btnReset.addEventListener('click', () => {
       isLocked = false;
+      audioPlayer.pause();
       stopConfetti();
       showScreen(screenStart);
     });
 
     btnReplay.addEventListener('click', () => {
       isLocked = false;
+      audioPlayer.pause();
       stopConfetti();
       showScreen(screenStart);
     });
-
-    /* 初期化 */
-    function initGame() {
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.onvoiceschanged = () => {
-          window.speechSynthesis.getVoices();
-        };
-      }
-    }
-
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initGame);
-    } else {
-      initGame();
-    }
   </script>
 </body>
 </html>
