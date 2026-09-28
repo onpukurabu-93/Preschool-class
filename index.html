@@ -2,1017 +2,778 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>たのしい ピアノあそび</title>
   <style>
-    /* =========================================================
-       1. 基本スタイル & 全体設定
-       ========================================================= */
+    /* ==========================================
+       1. 基本スタイル & iPhone描画補正
+       ========================================== */
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
       user-select: none;
       -webkit-user-select: none;
-      touch-action: manipulation;
+      -webkit-touch-callout: none;
+      -webkit-tap-highlight-color: transparent; /* タップ時の四角い外枠を消去 */
     }
 
-    body, html {
-      width: 100%;
-      height: 100%;
+    body {
+      font-family: "Hiragino Kaku Gothic ProN", "メイリオ", sans-serif;
+      background-color: #fef4ea;
+      color: #444;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
       overflow: hidden;
-      font-family: 'Hiragino Maru Gothic ProN', 'Rounded Mplus 1c', 'Meiryo', sans-serif;
-      background: linear-gradient(135deg, #e0f2fe 0%, #fef3c7 100%);
-      color: #334155;
     }
 
-    .screen {
-      display: none;
-      width: 100vw;
+    #app-container {
+      width: 100%;
+      max-width: 480px;
       height: 100vh;
+      max-height: 850px;
+      background: #ffffff;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      overflow: hidden;
+      border-radius: 20px;
+    }
+
+    /* 画面切り替えクラス */
+    .screen {
       position: absolute;
       top: 0;
       left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
       flex-direction: column;
-      justify-content: center;
       align-items: center;
+      justify-content: space-between;
+      padding: 20px 15px 10px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease-in-out;
       z-index: 1;
     }
 
     .screen.active {
-      display: flex;
-    }
-
-    /* 右上固定のリセットボタン（↻） */
-    #btn-reset {
-      position: fixed;
-      top: 12px;
-      right: 12px;
-      width: 64px;
-      height: 64px;
-      border-radius: 50%;
-      background: #ef4444;
-      color: white;
-      font-size: 34px;
-      font-weight: bold;
-      border: 4px solid white;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.22);
-      cursor: pointer;
-      z-index: 100;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      transition: transform 0.15s ease;
-    }
-
-    #btn-reset:active {
-      transform: scale(0.88);
-    }
-
-    /* ピカピカ点滅（発光）アニメーション */
-    #btn-reset.pika-pika {
-      animation: pikaPikaGlow 1.2s infinite ease-in-out;
-      border-color: #fffbeb;
-    }
-
-    @keyframes pikaPikaGlow {
-      0%, 100% {
-        transform: scale(1);
-        box-shadow: 0 0 12px #ef4444, 0 0 25px #f59e0b, 0 0 35px #fef08a;
-        background: #ef4444;
-      }
-      50% {
-        transform: scale(1.18);
-        box-shadow: 0 0 30px #f43f5e, 0 0 50px #fbbf24, 0 0 70px #ffffff;
-        background: #f43f5e;
-      }
-    }
-
-    /* =========================================================
-       2. スタート画面（トントン画面）
-       ========================================================= */
-    #screen-start {
-      background: linear-gradient(135deg, #ffedd5 0%, #fef08a 100%);
-      cursor: pointer;
-      text-align: center;
-    }
-
-    .start-card {
-      background: rgba(255, 255, 255, 0.95);
-      padding: 3.2rem 2.8rem;
-      border-radius: 44px;
-      box-shadow: 0 16px 38px rgba(0,0,0,0.12);
-      border: 5px solid #fbbf24;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2.2rem;
-      max-width: 90%;
-      width: auto;
-    }
-
-    .start-title {
-      font-size: clamp(2rem, 6.5vw, 3.2rem);
-      color: #d97706;
-      font-weight: bold;
-      text-shadow: 1px 1px 0px white;
-      white-space: nowrap;
-    }
-
-    .btn-tonton {
-      font-size: clamp(1.8rem, 6vw, 2.7rem);
-      padding: 1.1rem 3.8rem;
-      border-radius: 50px;
-      background: linear-gradient(180deg, #f43f5e 0%, #e11d48 100%);
-      color: white;
-      font-weight: bold;
-      border: none;
-      box-shadow: 0 8px 25px rgba(225, 29, 72, 0.4);
-      animation: pulse 1.8s infinite;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.06); }
-    }
-
-    /* =========================================================
-       3. メインゲーム画面（iPad横画面：余白ゼロ＆超ドカン特大）
-       ========================================================= */
-    #screen-game {
-      display: none;
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0 0.5rem; /* 余白を極限までカット */
-      width: 100vw;
-      height: 100vh;
-      box-sizing: border-box;
-    }
-
-    #screen-game.active {
-      display: flex;
-    }
-
-    /* --- 左エリア：ドラッグ元 --- */
-    .game-sidebar-left {
-      width: 28%;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
+      opacity: 1;
+      pointer-events: auto;
       z-index: 10;
     }
 
-    /* ドラッグ枠（iPad特大サイズ用：380px） */
-    .source-box {
-      width: 380px;
-      height: 380px;
-      background: rgba(255, 255, 255, 0.82);
-      border: 5px dashed #38bdf8;
-      border-radius: 44px;
+    /* タイトルヘッダー */
+    .title-header {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #ff6b81;
+      text-align: center;
+      background: #fff0f3;
+      padding: 8px 20px;
+      border-radius: 30px;
+      border: 3px solid #ffb3c1;
+      box-shadow: 0 4px 10px rgba(255, 107, 129, 0.2);
+      margin-top: 10px;
+    }
+
+    /* ==========================================
+       2. スタート画面
+       ========================================== */
+    #start-screen {
+      justify-content: center;
+      gap: 30px;
+      background: linear-gradient(135deg, #fff9e6 0%, #ffedf0 100%);
+    }
+
+    .start-logo {
+      font-size: 2.2rem;
+      font-weight: bold;
+      color: #ff4757;
+      text-shadow: 2px 2px 0px #fff, 4px 4px 0px #ffa502;
+      text-align: center;
+      line-height: 1.3;
+    }
+
+    /* 四角い外枠を出さない綺麗なスタートボタン */
+    .start-btn {
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #ff6b81, #ff4757);
+      color: white;
+      font-size: 2rem;
+      font-weight: bold;
+      border: 6px solid #ffffff;
+      box-shadow: 0 10px 25px rgba(255, 71, 87, 0.4);
+      cursor: pointer;
+      outline: none;
       display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: transform 0.1s ease;
+      -webkit-appearance: none;
+    }
+
+    .start-btn:active {
+      transform: scale(0.92);
+    }
+
+    /* ==========================================
+       3. メイン表示エリア（お皿・お団子）
+       ========================================== */
+    .stage-display {
+      flex: 1;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
       position: relative;
     }
 
-    /* ★ ドラッグ要素（iPad横画面：超ドカン特大サイズ）
-       ステージ1（さくらんぼ）: 290px（前回の倍近く！）
-       ステージ2（お団子）    : 380px（黒鍵3本を完全に包み込む！）
-    */
-    #draggable {
-      width: 290px;
-      height: 290px;
-      cursor: grab;
-      touch-action: none;
+    /* iPhoneのお皿切れ防止 */
+    .plate-wrapper {
+      width: 90%;
+      max-width: 340px;
+      height: 220px;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0 auto;
+    }
+
+    .plate-img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain; /* アスペクト比を維持して収める */
+      filter: drop-shadow(0 8px 12px rgba(0,0,0,0.15));
+    }
+
+    /* さくらんぼ配置 */
+    .cherries-container {
       position: absolute;
-      z-index: 50;
+      top: 25%;
+      width: 80%;
+      height: 50%;
       display: flex;
       justify-content: center;
       align-items: center;
+      gap: 15px;
     }
 
-    #draggable.stage2-size {
-      width: 380px;
-      height: 380px;
-    }
-
-    #draggable:active {
-      cursor: grabbing;
-    }
-
-    /* 位置移動（translate）のみアニメーション（回転ブレを排除） */
-    #draggable.snap-back {
-      transition: transform 0.28s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-
-    #image-container {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    /* ★ 回転ブレ徹底撲滅：画像要素のtransitionを絶対遮断 */
-    #item-img {
-      width: 100%;
-      height: 100%;
+    .cherry-item {
+      width: 65px;
+      height: 65px;
       object-fit: contain;
-      pointer-events: none;
-      filter: drop-shadow(0 8px 18px rgba(0,0,0,0.25));
-      transition: none !important; /* 途中のくるっとした回転を完全無効化 */
+      transform: scale(0);
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
-    .emoji-fallback {
-      font-size: 130px;
-      line-height: 1;
-      display: none;
+    .cherry-item.visible {
+      transform: scale(1);
     }
 
-    /* ★ お団子の回転制御（iPad横画面では最初から最後まで真横「三」に完全固定） */
-    .is-dango {
-      transform: rotate(90deg) !important;
-      transition: none !important;
-    }
-
-    .tray-item-dango {
-      transform: rotate(90deg) !important;
-      transition: none !important;
-    }
-
-    /* --- 中央エリア：鍵盤（iPad横画面で画面いっぱい限界突破拡大） --- */
-    .game-center {
-      width: 48%;
-      height: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    #keyboard-wrapper {
-      position: relative;
+    /* iPhone用お団子サイズ調整 (265px指定) */
+    .dango-wrapper {
       width: 100%;
-      max-width: 98vw; /* 制限解除 */
-      height: 520px;
-      background-size: contain;
-      background-position: center;
-      background-repeat: no-repeat;
+      max-width: 265px;
+      height: 260px;
+      position: relative;
       display: flex;
       justify-content: center;
       align-items: flex-end;
-      padding-bottom: 10px;
+      margin: 0 auto;
     }
 
-    .piano-keyboard {
-      display: flex;
-      position: relative;
-      background: #1e293b;
-      padding: 14px;
-      border-radius: 28px;
-      box-shadow: 0 20px 45px rgba(0,0,0,0.28);
-    }
-
-    #keyboard-wrapper.has-custom-bg .piano-keyboard {
-      opacity: 0;
-    }
-
-    /* 鍵盤の超特大化 */
-    .white-key {
-      width: 130px;
-      height: 420px;
-      background: white;
-      border: 4px solid #cbd5e1;
-      border-radius: 0 0 18px 18px;
-      margin: 0 5px;
-    }
-
-    .black-keys-target {
-      position: absolute;
-      top: 14px;
-      display: flex;
-      gap: 22px;
-      padding: 0;
-      background: transparent !important;
-      border: none !important;
-      box-shadow: none !important;
-      outline: none !important;
-      z-index: 20;
-    }
-
-    .stage1-target {
-      left: 155px;
-      width: 190px;
-      height: 250px;
-    }
-
-    .stage2-target {
-      left: 280px;
-      width: 320px;
-      height: 250px;
-    }
-
-    .black-key {
-      width: 82px;
-      height: 250px;
-      background: #0f172a;
-      border-radius: 0 0 12px 12px;
-    }
-
-    #keyboard-wrapper.has-custom-bg .black-key {
-      opacity: 0;
-    }
-
-    /* 背景画像適用時の精密ヒットエリア配置 */
-    #keyboard-wrapper.has-custom-bg .stage1-target {
-      top: 10%;
-      left: 36%;
-      width: 28%;
-      height: 50%;
-    }
-
-    #keyboard-wrapper.has-custom-bg .stage2-target {
-      top: 10%;
-      left: 30%;
-      width: 40%;
-      height: 50%;
-    }
-
-    /* --- 右エリア：ごほうびトレイ（お皿） --- */
-    .game-sidebar-right {
-      width: 24%;
+    .dango-container {
+      width: 100%;
       height: 100%;
       display: flex;
-      flex-direction: column;
+      flex-direction: column-reverse;
+      align-items: center;
+      justify-content: flex-start;
+      position: relative;
+    }
+
+    .dango-skewer {
+      position: absolute;
+      bottom: 10px;
+      width: 12px;
+      height: 220px;
+      background: #d7ccc8;
+      border-radius: 6px;
+      border: 2px solid #8d6e63;
+      z-index: 1;
+    }
+
+    .dango-item {
+      width: 85px;
+      height: 65px;
+      z-index: 2;
+      margin-bottom: -10px;
+      opacity: 0;
+      transform: translateY(-20px);
+      transition: all 0.3s ease-out;
+    }
+
+    .dango-item.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ==========================================
+       4. くす玉 & ピカピカ点滅リトライボタン
+       ========================================== */
+    #kusudama-screen {
+      justify-content: space-around;
+      background: radial-gradient(circle, #ffffff 0%, #fff3e0 100%);
+    }
+
+    .kusudama-box {
+      width: 220px;
+      height: 220px;
+      position: relative;
+      display: flex;
       justify-content: center;
       align-items: center;
     }
 
-    .tray-container {
-      width: 220px;
-      height: 440px;
-      background: rgba(255, 255, 255, 0.94);
-      border: 5px solid #f59e0b;
-      border-radius: 44px;
-      box-shadow: 0 12px 30px rgba(0,0,0,0.12);
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .tray-title {
-      font-size: 1.5rem;
-      font-weight: bold;
-      color: #d97706;
-      margin-bottom: 6px;
-    }
-
-    #tray-area {
+    .kusudama-img {
       width: 100%;
       height: 100%;
-      display: flex;
-      flex-direction: column; /* iPad横画面：縦に並べて「三」の配置 */
-      justify-content: space-around;
-      align-items: center;
-    }
-
-    .tray-item {
-      width: 110px;
-      height: 110px;
       object-fit: contain;
-      animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-
-    @keyframes popIn {
-      0% { transform: scale(0); }
-      100% { transform: scale(1); }
-    }
-
-    /* =========================================================
-       4. 全クリア・ごほうび画面（くす玉）
-       ========================================================= */
-    #screen-reward {
-      background: linear-gradient(135deg, #fef08a 0%, #f472b6 100%);
-      text-align: center;
-      z-index: 30;
-    }
-
-    #confetti-canvas {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 31;
-    }
-
-    .reward-content {
-      position: relative;
-      z-index: 32;
-      background: rgba(255, 255, 255, 0.95);
-      padding: 3rem 4rem;
-      border-radius: 48px;
-      box-shadow: 0 18px 40px rgba(0,0,0,0.15);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 1.5rem;
-      max-width: 90%;
-    }
-
-    .reward-title {
-      font-size: clamp(2rem, 6.5vw, 3.2rem);
-      color: #e11d48;
-      font-weight: bold;
-      white-space: nowrap;
-    }
-
-    .reward-emoji {
-      font-size: 6.5rem;
       animation: bounce 1s infinite alternate;
     }
 
     @keyframes bounce {
       0% { transform: translateY(0); }
-      100% { transform: translateY(-20px); }
+      100% { transform: translateY(-15px); }
     }
 
-    .btn-replay {
-      font-size: clamp(1.4rem, 4.8vw, 2rem);
-      padding: 1rem 3.5rem;
-      border-radius: 45px;
-      background: #10b981;
-      color: white;
+    /* 真ん中の赤いピカピカ点滅ボタン */
+    .red-retry-btn {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ff4d4d, #cc0000);
+      color: #ffffff;
+      font-size: 1.3rem;
       font-weight: bold;
-      border: none;
-      box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+      border: 5px solid #ffffff;
+      outline: none;
       cursor: pointer;
-      white-space: nowrap;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 0 20px rgba(255, 0, 0, 0.6);
+      animation: blinkRed 0.6s ease-in-out infinite alternate;
+      -webkit-appearance: none;
     }
 
-    /* =========================================================
-       5. iPhone（縦画面）最適化スタイル
-       ========================================================= */
-    @media (orientation: portrait) {
-      #screen-game {
-        flex-direction: column;
-        justify-content: space-around;
-        padding: 1rem;
+    @keyframes blinkRed {
+      0% {
+        transform: scale(1);
+        box-shadow: 0 0 10px #ff4d4d, 0 0 20px #ff0000;
+        filter: brightness(1);
       }
+      100% {
+        transform: scale(1.15);
+        box-shadow: 0 0 30px #ff0000, 0 0 50px #ff0000;
+        filter: brightness(1.4);
+      }
+    }
 
-      .game-sidebar-left, .game-center, .game-sidebar-right {
-        width: 100%;
-        height: auto;
-      }
+    .red-retry-btn:active {
+      transform: scale(0.95);
+    }
 
-      .source-box {
-        width: 220px;
-        height: 220px;
-      }
+    /* ==========================================
+       5. ピアノ鍵盤エリア
+       ========================================== */
+    .keyboard-container {
+      width: 100%;
+      height: 160px;
+      display: flex;
+      justify-content: space-around;
+      align-items: flex-end;
+      background: #222;
+      padding: 8px 4px 12px;
+      border-top: 6px solid #ff6b81;
+      border-radius: 15px 15px 0 0;
+      gap: 3px;
+    }
 
-      /* iPhone（縦画面）：さくらんぼ＝完璧な120px、お団子＝もう一息大きく【240px】 */
-      #draggable {
-        width: 120px;
-        height: 120px;
-      }
+    .key {
+      flex: 1;
+      height: 100%;
+      background: #ffffff;
+      border-radius: 0 0 8px 8px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: center;
+      padding-bottom: 12px;
+      font-weight: bold;
+      font-size: 1.1rem;
+      color: #333;
+      box-shadow: inset 0 -8px 0 #e0e0e0, 0 4px 6px rgba(0,0,0,0.3);
+      cursor: pointer;
+      outline: none;
+      transition: background 0.05s, transform 0.05s;
+    }
 
-      #draggable.stage2-size {
-        width: 240px;
-        height: 240px;
-      }
+    .key:active, .key.pressed {
+      background: #ffeaa7;
+      box-shadow: inset 0 -2px 0 #e0e0e0, 0 2px 3px rgba(0,0,0,0.3);
+      transform: translateY(4px);
+    }
 
-      #keyboard-wrapper {
-        max-width: 100%;
-        height: 310px;
-      }
+    .key.c { color: #e74c3c; }
+    .key.d { color: #e67e22; }
+    .key.e { color: #f1c40f; }
+    .key.f { color: #2ecc71; }
+    .key.g { color: #1abc9c; }
+    .key.a { color: #3498db; }
+    .key.b { color: #9b59b6; }
+    .key.c2 { color: #e84393; }
 
-      .white-key {
-        width: 72px;
-        height: 220px;
-      }
-
-      .black-key {
-        width: 46px;
-        height: 130px;
-      }
-
-      .stage1-target {
-        left: 86px;
-        width: 108px;
-        height: 130px;
-      }
-
-      .stage2-target {
-        left: 156px;
-        width: 175px;
-        height: 130px;
-      }
-
-      .tray-container {
-        width: 330px;
-        height: 130px;
-        flex-direction: column;
-      }
-
-      #tray-area {
-        flex-direction: row; /* iPhone（縦画面）時：横並び */
-      }
-
-      /* iPhone（縦画面）のお皿の上でのみ縦向き「川」に補正 */
-      .tray-item-dango {
-        transform: rotate(0deg) !important;
-      }
+    /* 鍵盤無効化フラグ */
+    .keyboard-container.disabled {
+      pointer-events: none;
+      opacity: 0.8;
     }
   </style>
 </head>
 <body>
 
-  <!-- 右上固定コントロール：最初に戻るボタン（↻） -->
-  <button id="btn-reset" title="最初に戻る">↻</button>
+  <div id="app-container">
 
-  <!-- 1. トントン画面（スタート） -->
-  <section id="screen-start" class="screen active">
-    <div class="start-card">
-      <div class="start-title">たのしい ピアノあそび</div>
-      <button id="btn-tonton" class="btn-tonton">トントン！</button>
+    <!-- 1. スタート画面 -->
+    <div id="start-screen" class="screen active">
+      <div class="start-logo">たのしい<br>ピアノあそび</div>
+      <button id="start-btn" class="start-btn">スタート</button>
+      <div></div>
     </div>
-  </section>
 
-  <!-- 2. メインゲーム画面 -->
-  <section id="screen-game" class="screen">
-    <!-- 左：ドラッグ元 -->
-    <div class="game-sidebar-left">
-      <div class="source-box">
-        <div id="draggable">
-          <div id="image-container">
-            <img id="item-img" src="" alt="アイテム">
+    <!-- 2. さくらんぼ画面 -->
+    <div id="cherry-screen" class="screen">
+      <div class="title-header">さくらんぼを あつめよう！</div>
+      <div class="stage-display">
+        <div class="plate-wrapper">
+          <!-- お皿 SVG -->
+          <svg class="plate-img" viewBox="0 0 300 150" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="150" cy="85" rx="140" ry="55" fill="#f0f0f0" stroke="#d6d6d6" stroke-width="4"/>
+            <ellipse cx="150" cy="80" rx="120" ry="42" fill="#ffffff" stroke="#e8e8e8" stroke-width="2"/>
+            <ellipse cx="150" cy="80" rx="90" ry="28" fill="#fcfcfc" stroke="#f0f0f0" stroke-width="1"/>
+          </svg>
+          <div class="cherries-container">
+            <!-- さくらんぼ1 -->
+            <svg id="cherry-1" class="cherry-item" viewBox="0 0 100 100">
+              <path d="M50,20 Q60,5 75,30" stroke="#4caf50" stroke-width="4" fill="none" stroke-linecap="round"/>
+              <path d="M50,20 Q40,5 25,35" stroke="#4caf50" stroke-width="4" fill="none" stroke-linecap="round"/>
+              <circle cx="25" cy="42" r="16" fill="#ff2a4b"/>
+              <circle cx="75" cy="37" r="16" fill="#ff2a4b"/>
+              <circle cx="20" cy="37" r="4" fill="#ffffff" opacity="0.6"/>
+              <circle cx="70" cy="32" r="4" fill="#ffffff" opacity="0.6"/>
+            </svg>
+            <!-- さくらんぼ2 -->
+            <svg id="cherry-2" class="cherry-item" viewBox="0 0 100 100">
+              <path d="M50,20 Q60,5 75,30" stroke="#4caf50" stroke-width="4" fill="none" stroke-linecap="round"/>
+              <path d="M50,20 Q40,5 25,35" stroke="#4caf50" stroke-width="4" fill="none" stroke-linecap="round"/>
+              <circle cx="25" cy="42" r="16" fill="#ff2a4b"/>
+              <circle cx="75" cy="37" r="16" fill="#ff2a4b"/>
+              <circle cx="20" cy="37" r="4" fill="#ffffff" opacity="0.6"/>
+              <circle cx="70" cy="32" r="4" fill="#ffffff" opacity="0.6"/>
+            </svg>
+            <!-- さくらんぼ3 -->
+            <svg id="cherry-3" class="cherry-item" viewBox="0 0 100 100">
+              <path d="M50,20 Q60,5 75,30" stroke="#4caf50" stroke-width="4" fill="none" stroke-linecap="round"/>
+              <path d="M50,20 Q40,5 25,35" stroke="#4caf50" stroke-width="4" fill="none" stroke-linecap="round"/>
+              <circle cx="25" cy="42" r="16" fill="#ff2a4b"/>
+              <circle cx="75" cy="37" r="16" fill="#ff2a4b"/>
+              <circle cx="20" cy="37" r="4" fill="#ffffff" opacity="0.6"/>
+              <circle cx="70" cy="32" r="4" fill="#ffffff" opacity="0.6"/>
+            </svg>
           </div>
-          <div id="emoji-fallback" class="emoji-fallback">🍒</div>
         </div>
       </div>
-    </div>
-
-    <!-- 中央：鍵盤 -->
-    <div class="game-center">
-      <div id="keyboard-wrapper">
-        <!-- JSで鍵盤・判定枠を生成 -->
+      <!-- 鍵盤1 -->
+      <div class="keyboard-container" id="keyboard-cherry">
+        <button class="key c" data-note="c">ド</button>
+        <button class="key d" data-note="d">レ</button>
+        <button class="key e" data-note="e">ミ</button>
+        <button class="key f" data-note="f">ファ</button>
+        <button class="key g" data-note="g">ソ</button>
+        <button class="key a" data-note="a">ラ</button>
+        <button class="key b" data-note="b">シ</button>
+        <button class="key c2" data-note="c2">ド</button>
       </div>
     </div>
 
-    <!-- 右：ごほうびトレイ（お皿） -->
-    <div class="game-sidebar-right">
-      <div class="tray-container">
-        <div class="tray-title">できたよ！</div>
-        <div id="tray-area"></div>
+    <!-- 3. お団子画面 -->
+    <div id="dango-screen" class="screen">
+      <div class="title-header">おだんごを つくろう！</div>
+      <div class="stage-display">
+        <div class="dango-wrapper">
+          <div class="dango-container">
+            <div class="dango-skewer"></div>
+            <!-- お団子1 (下) -->
+            <svg id="dango-1" class="dango-item" viewBox="0 0 100 70">
+              <ellipse cx="50" cy="35" rx="40" ry="28" fill="#8bc34a"/>
+              <ellipse cx="38" cy="25" rx="10" ry="6" fill="#ffffff" opacity="0.4"/>
+            </svg>
+            <!-- お団子2 (中) -->
+            <svg id="dango-2" class="dango-item" viewBox="0 0 100 70">
+              <ellipse cx="50" cy="35" rx="40" ry="28" fill="#ffffff" stroke="#e0e0e0" stroke-width="2"/>
+              <ellipse cx="38" cy="25" rx="10" ry="6" fill="#ffffff" opacity="0.8"/>
+            </svg>
+            <!-- お団子3 (上) -->
+            <svg id="dango-3" class="dango-item" viewBox="0 0 100 70">
+              <ellipse cx="50" cy="35" rx="40" ry="28" fill="#ff8a80"/>
+              <ellipse cx="38" cy="25" rx="10" ry="6" fill="#ffffff" opacity="0.5"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <!-- 鍵盤2 -->
+      <div class="keyboard-container" id="keyboard-dango">
+        <button class="key c" data-note="c">ド</button>
+        <button class="key d" data-note="d">レ</button>
+        <button class="key e" data-note="e">ミ</button>
+        <button class="key f" data-note="f">ファ</button>
+        <button class="key g" data-note="g">ソ</button>
+        <button class="key a" data-note="a">ラ</button>
+        <button class="key b" data-note="b">シ</button>
+        <button class="key c2" data-note="c2">ド</button>
       </div>
     </div>
-  </section>
 
-  <!-- 3. くす玉・全クリア画面 -->
-  <section id="screen-reward" class="screen">
-    <canvas id="confetti-canvas"></canvas>
-    <div class="reward-content">
-      <div class="reward-emoji">🎊</div>
-      <div class="reward-title">ぜんぶ クリア！</div>
-      <button id="btn-replay" class="btn-replay">もう一度あそぶ</button>
+    <!-- 4. くす玉画面 -->
+    <div id="kusudama-screen" class="screen">
+      <div class="title-header">よくできました！</div>
+      <div class="kusudama-box">
+        <!-- くす玉 SVG -->
+        <svg class="kusudama-img" viewBox="0 0 200 200">
+          <!-- 紙吹雪 -->
+          <circle cx="30" cy="40" r="6" fill="#ff4757"/>
+          <circle cx="170" cy="50" r="8" fill="#ffa502"/>
+          <rect x="20" y="80" width="10" height="10" fill="#2ed573" transform="rotate(15 20 80)"/>
+          <rect x="160" y="110" width="12" height="8" fill="#1e90ff" transform="rotate(-20 160 110)"/>
+          <polygon points="50,150 58,165 42,165" fill="#e84393"/>
+          <polygon points="140,140 152,150 135,158" fill="#fecb6e"/>
+          <!-- くす玉割れた本体 -->
+          <path d="M 50 90 A 50 50 0 0 1 150 90 Z" fill="#ff6b81" stroke="#ff4757" stroke-width="3"/>
+          <path d="M 50 95 A 50 50 0 0 0 150 95 Z" fill="#ffa502" stroke="#ff7f50" stroke-width="3"/>
+          <text x="100" y="85" font-size="22" font-weight="bold" fill="#ffffff" text-anchor="middle">おめでとう</text>
+        </svg>
+      </div>
+      <!-- 真ん中の赤いピカピカ点滅ボタン -->
+      <button id="retry-btn" class="red-retry-btn">もうかい</button>
+      <div></div>
     </div>
-  </section>
 
-  <!-- =========================================================
-     JavaScript（完全再生＆1.4秒余韻タイマー＆回転ブレ徹底排除）
-     ========================================================= -->
+  </div>
+
   <script>
-    /* 1. 画像探査リスト */
-    const FILES_STAGE1_BG = ["kenban1.png", "Kenban1.png", "kenban1.PNG", "Kenban1.PNG", "KENBAN1.PNG", "kenban1.jpg"];
-    const FILES_STAGE2_BG = ["kenban2.png", "Kenban2.png", "kenban2.PNG", "Kenban2.PNG", "KENBAN2.PNG", "kenban2.jpg"];
-    const FILES_SAKURANBO = ["sakuranbo.png", "Sakuranbo.png", "sakuranbo.PNG", "Sakuranbo.PNG", "SAKURANBO.PNG", "sakuranbo.jpg"];
-    const FILES_KUSHIDANGO = ["kushidango.png", "Kushidango.png", "kushidango.PNG", "Kushidango.PNG", "KUSHIDANGO.PNG", "kushidango.jpg"];
+    /* ==========================================
+       Web Audio API 完全対応サウンドエンジン
+       ========================================== */
+    class BulletproofAudioEngine {
+      constructor() {
+        this.ctx = null;
+        this.buffers = new Map();
+        this.activeSources = new Set();
+        this.soundUrls = {
+          'c': 'do.mp3',
+          'd': 're.mp3',
+          'e': 'mi.mp3',
+          'f': 'fa.mp3',
+          'g': 'so.mp3',
+          'a': 'la.mp3',
+          'b': 'si.mp3',
+          'c2': 'do2.mp3',
+          'success2': 'success2.mp3',
+          'clear1': 'clear1.mp3',
+          'clear2': 'clear2.mp3',
+          'retry': 'retry.mp3'
+        };
+        // 周波数（MP3ファイル読み込み失敗時のバックアップ用音源生成）
+        this.freqs = {
+          'c': 261.63, 'd': 293.66, 'e': 329.63, 'f': 349.23,
+          'g': 392.00, 'a': 440.00, 'b': 493.88, 'c2': 523.25,
+          'success2': 880.00, 'clear1': 587.33, 'clear2': 659.25, 'retry': 698.46
+        };
+      }
 
-    /* 2. ゲーム状態変数 */
-    let currentStage = 1;  
-    let successCount = 0;  
-    let isLocked = false;  
-
-    let loadedPathSakuranbo = "";
-    let loadedPathKushidango = "";
-
-    let isDragging = false;
-    let startX = 0, startY = 0;
-    let currentX = 0, currentY = 0;
-
-    /* DOM要素 */
-    const screenStart = document.getElementById('screen-start');
-    const screenGame = document.getElementById('screen-game');
-    const screenReward = document.getElementById('screen-reward');
-
-    const btnTonton = document.getElementById('btn-tonton');
-    const btnReset = document.getElementById('btn-reset');
-    const btnReplay = document.getElementById('btn-replay');
-
-    const draggable = document.getElementById('draggable');
-    const itemImg = document.getElementById('item-img');
-    const emojiFallback = document.getElementById('emoji-fallback');
-    const keyboardWrapper = document.getElementById('keyboard-wrapper');
-    const trayArea = document.getElementById('tray-area');
-
-    /* 3. 音声再生エンジン（クリア音声完了の絶対保証＆タイムアウト安全策） */
-    const audioPlayer = new Audio();
-
-    function unlockAudioIOS() {
-      audioPlayer.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==";
-      audioPlayer.play().catch(() => {});
-    }
-
-    function playMp3(filename, onEndedCallback) {
-      audioPlayer.pause();
-      audioPlayer.currentTime = 0;
-      audioPlayer.src = filename;
-
-      let hasExecuted = false;
-      let safeTimeoutId = null;
-
-      const finishHandler = () => {
-        if (!hasExecuted) {
-          hasExecuted = true;
-          if (safeTimeoutId) clearTimeout(safeTimeoutId);
-          audioPlayer.onended = null;
-          audioPlayer.onerror = null;
-          if (onEndedCallback) onEndedCallback();
+      // AudioContextの初期化
+      init() {
+        if (!this.ctx) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioCtx();
         }
-      };
-
-      if (onEndedCallback) {
-        audioPlayer.onended = finishHandler;
-        audioPlayer.onerror = finishHandler;
-        /* 安全策：万が一ブラウザがonendedイベントを出さなくても6秒後に進む */
-        safeTimeoutId = setTimeout(finishHandler, 6000);
-      } else {
-        audioPlayer.onended = null;
-        audioPlayer.onerror = null;
       }
 
-      audioPlayer.play().catch(err => {
-        console.log("Audio play failed or blocked: " + filename, err);
-        finishHandler();
-      });
-    }
-
-    /* 4. 画面切り替え */
-    function showScreen(targetScreen) {
-      [screenStart, screenGame, screenReward].forEach(s => s.classList.remove('active'));
-      targetScreen.classList.add('active');
-
-      if (targetScreen !== screenReward) {
-        btnReset.classList.remove('pika-pika');
+      // モバイル自動再生制限解除
+      async unlock() {
+        this.init();
+        if (this.ctx && this.ctx.state === 'suspended') {
+          await this.ctx.resume();
+        }
       }
-    }
 
-    /* 5. 画像自動探査読み込み */
-    function loadImageWithFallback(imgElement, candidates, fallbackEmoji, onSuccessCallback) {
-      let index = 0;
-      imgElement.style.display = 'block';
-      if (emojiFallback) emojiFallback.style.display = 'none';
-
-      imgElement.onerror = function() {
-        index++;
-        if (index < candidates.length) {
-          imgElement.src = candidates[index];
-        } else {
-          imgElement.style.display = 'none';
-          if (emojiFallback) {
-            emojiFallback.style.display = 'block';
-            emojiFallback.textContent = fallbackEmoji;
+      // サウンド全ロード
+      async loadAllSounds() {
+        this.init();
+        const promises = Object.keys(this.soundUrls).map(async (key) => {
+          const url = this.soundUrls[key];
+          try {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+            const arrayBuffer = await response.arrayBuffer();
+            const audioBuffer = await this.ctx.decodeAudioData(arrayBuffer);
+            this.buffers.set(key, audioBuffer);
+          } catch (e) {
+            // ファイルが存在しない・ロード不可時の合成フォールバック音を作成（絶対動作保証）
+            const fallbackBuffer = this.createSyntheticBuffer(this.freqs[key] || 440, key.includes('clear') ? 2.0 : 0.6);
+            this.buffers.set(key, fallbackBuffer);
           }
+        });
+        await Promise.all(promises);
+      }
+
+      // 合成音生成（絶対に音が消えない保険）
+      createSyntheticBuffer(freq, duration) {
+        if (!this.ctx) return null;
+        const sampleRate = this.ctx.sampleRate;
+        const buffer = this.ctx.createBuffer(1, sampleRate * duration, sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < buffer.length; i++) {
+          const t = i / sampleRate;
+          data[i] = Math.sin(2 * Math.PI * freq * t) * Math.exp(-t * (3.0 / duration));
         }
-      };
+        return buffer;
+      }
 
-      imgElement.onload = function() {
-        if (onSuccessCallback) onSuccessCallback(imgElement.src);
-      };
+      // すべての再生中音声を即座に全クリア（スタート時などのボイス重複を100%防止）
+      stopAll() {
+        this.activeSources.forEach(source => {
+          try {
+            source.onended = null;
+            source.stop();
+          } catch (e) {}
+        });
+        this.activeSources.clear();
+      }
 
-      imgElement.src = candidates[0];
-    }
+      // 音声の確実再生 (onendedコールバック対応)
+      play(key, onendedCallback = null) {
+        this.unlock();
+        if (!this.ctx) return;
 
-    function setKeyboardBackgroundWithFallback(candidates) {
-      let index = 0;
-      keyboardWrapper.classList.remove('has-custom-bg');
-
-      function tryNext() {
-        if (index >= candidates.length) {
-          keyboardWrapper.style.backgroundImage = 'none';
+        const buffer = this.buffers.get(key);
+        if (!buffer) {
+          if (onendedCallback) onendedCallback();
           return;
         }
-        const img = new Image();
-        const testUrl = candidates[index];
 
-        img.onload = function() {
-          keyboardWrapper.style.backgroundImage = `url('${testUrl}')`;
-          keyboardWrapper.classList.add('has-custom-bg');
+        // ノード作成 (Web Audio API)
+        const source = this.ctx.createBufferSource();
+        source.buffer = buffer;
+        source.connect(this.ctx.destination);
+
+        this.activeSources.add(source);
+
+        source.onended = () => {
+          this.activeSources.delete(source);
+          if (onendedCallback && typeof onendedCallback === 'function') {
+            onendedCallback();
+          }
         };
 
-        img.onerror = function() {
-          index++;
-          tryNext();
-        };
-
-        img.src = testUrl;
-      }
-
-      tryNext();
-    }
-
-    /* 6. ステージ構築 */
-    function startStage(stageNum) {
-      currentStage = stageNum;
-      successCount = 0;
-      isLocked = false; 
-      trayArea.innerHTML = '';
-      resetDraggablePosition();
-
-      if (stageNum === 1) {
-        // ステージ1：さくらんぼ
-        draggable.classList.remove('stage2-size');
-        itemImg.classList.remove('is-dango');
-
-        setKeyboardBackgroundWithFallback(FILES_STAGE1_BG);
-        loadImageWithFallback(itemImg, FILES_SAKURANBO, "🍒", path => {
-          loadedPathSakuranbo = path;
-        });
-
-        keyboardWrapper.innerHTML = `
-          <div class="piano-keyboard">
-            <div class="white-key"></div>
-            <div class="white-key"></div>
-            <div class="white-key"></div>
-            <div class="black-keys-target stage1-target" id="target-area">
-              <div class="black-key"></div>
-              <div class="black-key"></div>
-            </div>
-          </div>
-        `;
-
-        showScreen(screenGame);
-        playMp3("start1.mp3");
-
-      } else if (stageNum === 2) {
-        // ステージ2：お団子（超ドカン特大 & 回転ブレ排除）
-        draggable.classList.add('stage2-size');
-        itemImg.classList.add('is-dango');
-
-        setKeyboardBackgroundWithFallback(FILES_STAGE2_BG);
-        loadImageWithFallback(itemImg, FILES_KUSHIDANGO, "🍡", path => {
-          loadedPathKushidango = path;
-        });
-
-        keyboardWrapper.innerHTML = `
-          <div class="piano-keyboard">
-            <div class="white-key"></div>
-            <div class="white-key"></div>
-            <div class="white-key"></div>
-            <div class="white-key"></div>
-            <div class="black-keys-target stage2-target" id="target-area">
-              <div class="black-key"></div>
-              <div class="black-key"></div>
-              <div class="black-key"></div>
-            </div>
-          </div>
-        `;
-
-        showScreen(screenGame);
-        playMp3("start2.mp3");
+        source.start(0);
       }
     }
 
-    /* お皿にごほうび追加 */
-    function addItemToTray() {
-      const trayImg = document.createElement('img');
+    /* ==========================================
+       ゲーム進行ロジック
+       ========================================== */
+    const audio = new BulletproofAudioEngine();
 
-      if (currentStage === 1) {
-        trayImg.className = 'tray-item';
-        trayImg.src = loadedPathSakuranbo || itemImg.src;
-      } else {
-        trayImg.className = 'tray-item tray-item-dango';
-        trayImg.src = loadedPathKushidango || itemImg.src;
-      }
+    // 状態変数
+    let currentStage = 'start'; // start, cherry, dango, kusudama
+    let cherryCount = 0;
+    let dangoCount = 0;
+    let isProcessingStageClear = false;
 
-      trayArea.appendChild(trayImg);
-    }
+    // DOM要素
+    const screens = {
+      start: document.getElementById('start-screen'),
+      cherry: document.getElementById('cherry-screen'),
+      dango: document.getElementById('dango-screen'),
+      kusudama: document.getElementById('kusudama-screen')
+    };
 
-    /* 7. ドラッグ＆ドロップ ＆ 判定ロジック */
-    function getEventPos(e) {
-      if (e.touches && e.touches.length > 0) {
-        return { x: e.touches[0].clientX, y: e.touches[0].clientY };
-      }
-      return { x: e.clientX, y: e.clientY };
-    }
+    const startBtn = document.getElementById('start-btn');
+    const retryBtn = document.getElementById('retry-btn');
+    const keyboardCherry = document.getElementById('keyboard-cherry');
+    const keyboardDango = document.getElementById('keyboard-dango');
 
-    function handleDragStart(e) {
-      unlockAudioIOS();
-      if (isDragging || isLocked) return; // ★操作ロック中は一切反応しない
-      isDragging = true;
+    // 初期ロード
+    window.addEventListener('DOMContentLoaded', () => {
+      audio.loadAllSounds();
+    });
 
-      draggable.classList.remove('snap-back');
-
-      const pos = getEventPos(e);
-      startX = pos.x - currentX;
-      startY = pos.y - currentY;
-
-      if (e.cancelable) e.preventDefault();
-    }
-
-    function handleDragMove(e) {
-      if (!isDragging) return;
-      if (e.cancelable) e.preventDefault();
-
-      const pos = getEventPos(e);
-      currentX = pos.x - startX;
-      currentY = pos.y - startY;
-
-      draggable.style.transform = `translate3d(${currentX}px, ${currentY}px, 0px)`;
-    }
-
-    function handleDragEnd() {
-      if (!isDragging) return;
-      isDragging = false;
-
-      const targetArea = document.getElementById('target-area');
-      if (!targetArea) return;
-
-      const itemRect = draggable.getBoundingClientRect();
-      const targetRect = targetArea.getBoundingClientRect();
-
-      const itemCenterX = itemRect.left + itemRect.width / 2;
-      const itemCenterY = itemRect.top + itemRect.height / 2;
-
-      /* 黒鍵の真上・厳格ミリ単位判定 */
-      const MARGIN_X = 22;
-      const MARGIN_Y_TOP = 12;
-      const MARGIN_Y_BOTTOM = -10;
-
-      const isHit =
-        itemCenterX >= (targetRect.left - MARGIN_X) &&
-        itemCenterX <= (targetRect.right + MARGIN_X) &&
-        itemCenterY >= (targetRect.top - MARGIN_Y_TOP) &&
-        itemCenterY <= (targetRect.bottom + MARGIN_Y_BOTTOM);
-
-      if (isHit) {
-        // 正解！
-        successCount++;
-        addItemToTray();
-        resetDraggablePosition();
-
-        if (successCount === 1) {
-          playMp3("success1.mp3");
-        } else if (successCount === 2) {
-          playMp3("success2.mp3");
-        } else if (successCount >= 3) {
-          /* ★ 3つ成功した瞬間に操作を完全ガード */
-          isLocked = true;
-
-          /* ★【じっくり見せる余韻タイマー】
-             お皿に3つ目が並んだ瞬間を1.4秒間子どもたちに見せてからクリア処理を進める
-          */
-          setTimeout(() => {
-            if (currentStage === 1) {
-              /* 1.4秒後、「clear1.mp3」を確実に再生し、最後まで聴き終わってからステージ2へ */
-              playMp3("clear1.mp3", () => {
-                setTimeout(() => {
-                  startStage(2);
-                }, 200);
-              });
-            } else if (currentStage === 2) {
-              /* 1.4秒後、「clear2.mp3」を再生して画面切り替え＆「retry.mp3」へ */
-              playMp3("clear2.mp3", () => {
-                playMp3("retry.mp3");
-              });
-              showRewardScreen();
-            }
-          }, 1400); // 1.4秒の達成感ウェイト
+    // 画面切り替え関数
+    function showScreen(screenKey) {
+      Object.keys(screens).forEach(key => {
+        if (key === screenKey) {
+          screens[key].classList.add('active');
+        } else {
+          screens[key].classList.remove('active');
         }
-
-      } else {
-        // 不正解：スムーズに位置復帰
-        draggable.classList.add('snap-back');
-        currentX = 0;
-        currentY = 0;
-        draggable.style.transform = 'translate3d(0px, 0px, 0px)';
-      }
-    }
-
-    function resetDraggablePosition() {
-      draggable.classList.remove('snap-back');
-      currentX = 0;
-      currentY = 0;
-      draggable.style.transform = 'translate3d(0px, 0px, 0px)';
-    }
-
-    /* イベント登録 */
-    draggable.addEventListener('touchstart', handleDragStart, { passive: false });
-    window.addEventListener('touchmove', handleDragMove, { passive: false });
-    window.addEventListener('touchend', handleDragEnd, { passive: false });
-
-    draggable.addEventListener('mousedown', handleDragStart);
-    window.addEventListener('mousemove', handleDragMove);
-    window.addEventListener('mouseup', handleDragEnd);
-
-    /* 8. くす玉・紙吹雪演出 ＆ ピカピカボタン処理 */
-    const canvas = document.getElementById('confetti-canvas');
-    const ctx = canvas.getContext('2d');
-    let particles = [];
-    let animationId = null;
-
-    function showRewardScreen() {
-      showScreen(screenReward);
-      btnReset.classList.add('pika-pika'); // 右上リセットボタンをピカピカ点滅（発光）！
-      startConfetti();
-    }
-
-    function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }
-    window.addEventListener('resize', resizeCanvas);
-
-    function startConfetti() {
-      resizeCanvas();
-      particles = [];
-      const colors = ['#f43f5e', '#0ea5e9', '#eab308', '#22c55e', '#a855f7', '#ec4899'];
-
-      for (let i = 0; i < 120; i++) {
-        particles.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height - canvas.height,
-          size: Math.random() * 14 + 6,
-          color: colors[Math.floor(Math.random() * colors.length)],
-          vy: Math.random() * 3 + 2,
-          vx: Math.random() * 2 - 1,
-          rotation: Math.random() * 360,
-          rotSpeed: Math.random() * 4 - 2
-        });
-      }
-      renderConfetti();
-    }
-
-    function renderConfetti() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      particles.forEach((p) => {
-        p.y += p.vy;
-        p.x += p.vx;
-        p.rotation += p.rotSpeed;
-
-        if (p.y > canvas.height) {
-          p.y = -20;
-          p.x = Math.random() * canvas.width;
-        }
-
-        ctx.save();
-        ctx.translate(p.x, p.y);
-        ctx.rotate((p.rotation * Math.PI) / 180);
-        ctx.fillStyle = p.color;
-        ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
-        ctx.restore();
       });
-
-      animationId = requestAnimationFrame(renderConfetti);
+      currentStage = screenKey;
     }
 
-    function stopConfetti() {
-      if (animationId) cancelAnimationFrame(animationId);
-    }
+    // ゲーム開始 (スタートボタン)
+    startBtn.addEventListener('click', async () => {
+      await audio.unlock();
+      audio.stopAll(); // 前のボイス・効果音を完全リセット
 
-    /* 9. リセット＆再プレイ */
-    btnTonton.addEventListener('click', () => {
-      unlockAudioIOS();
-      startStage(1);
-    });
+      // カウント初期化
+      cherryCount = 0;
+      dangoCount = 0;
+      isProcessingStageClear = false;
 
-    screenStart.addEventListener('click', (e) => {
-      if (e.target === screenStart) {
-        unlockAudioIOS();
-        startStage(1);
+      // リセット表示
+      for (let i = 1; i <= 3; i++) {
+        document.getElementById(`cherry-${i}`).classList.remove('visible');
+        document.getElementById(`dango-${i}`).classList.remove('visible');
       }
+      keyboardCherry.classList.remove('disabled');
+      keyboardDango.classList.remove('disabled');
+
+      showScreen('cherry');
     });
 
-    btnReset.addEventListener('click', () => {
-      isLocked = false;
-      audioPlayer.pause();
-      stopConfetti();
-      showScreen(screenStart);
-    });
+    // 鍵盤タップ時の共通処理
+    function handleKeyPress(noteKey) {
+      if (isProcessingStageClear) return; // 判定中は連打防止
 
-    btnReplay.addEventListener('click', () => {
-      isLocked = false;
-      audioPlayer.pause();
-      stopConfetti();
-      showScreen(screenStart);
+      audio.unlock();
+
+      if (currentStage === 'cherry') {
+        if (cherryCount < 3) {
+          cherryCount++;
+          // 鍵盤音再生
+          audio.play(noteKey);
+          
+          // さくらんぼ表示
+          document.getElementById(`cherry-${cherryCount}`).classList.add('visible');
+
+          if (cherryCount < 3) {
+            // 1, 2個目：success2.mp3 を再生
+            setTimeout(() => {
+              audio.play('success2');
+            }, 150);
+          } else {
+            // 仕様2: さくらんぼ3つ目の時
+            // お皿に3つ乗った画面のままで即座に clear1.mp3 を最後まで聴かせ、終わった瞬間(onended)にお団子画面へ進む
+            isProcessingStageClear = true;
+            keyboardCherry.classList.add('disabled');
+
+            setTimeout(() => {
+              audio.play('clear1', () => {
+                // clear1.mp3 が最後まで完全に終わった瞬間
+                showScreen('dango');
+                isProcessingStageClear = false;
+              });
+            }, 200);
+          }
+        }
+      } else if (currentStage === 'dango') {
+        if (dangoCount < 3) {
+          dangoCount++;
+          // 鍵盤音再生
+          audio.play(noteKey);
+
+          // お団子表示
+          document.getElementById(`dango-${dangoCount}`).classList.add('visible');
+
+          if (dangoCount < 3) {
+            // 1, 2個目：success2.mp3 を再生
+            setTimeout(() => {
+              audio.play('success2');
+            }, 150);
+          } else {
+            // 仕様3: お団子3つ目の時
+            // ゲーム画面のままで clear2.mp3 を最後まで聴かせ、終わった瞬間にくす玉画面へ進めて retry.mp3 を流す
+            isProcessingStageClear = true;
+            keyboardDango.classList.add('disabled');
+
+            setTimeout(() => {
+              audio.play('clear2', () => {
+                // clear2.mp3 が最後まで完全に終わった瞬間
+                showScreen('kusudama');
+                // retry.mp3 を流す
+                audio.play('retry');
+                isProcessingStageClear = false;
+              });
+            }, 200);
+          }
+        }
+      }
+    }
+
+    // 鍵盤イベントバインド (タッチ・クリックの重複防止)
+    const setupKeyboard = (keyboardEl) => {
+      const keys = keyboardEl.querySelectorAll('.key');
+      keys.forEach(key => {
+        const handleEvent = (e) => {
+          e.preventDefault();
+          const note = key.getAttribute('data-note');
+          key.classList.add('pressed');
+          setTimeout(() => key.classList.remove('pressed'), 150);
+          handleKeyPress(note);
+        };
+
+        key.addEventListener('touchstart', handleEvent, { passive: false });
+        key.addEventListener('click', (e) => {
+          if (e.detail !== 0) return; // タッチイベントとの重複実行をガード
+          handleEvent(e);
+        });
+      });
+    };
+
+    setupKeyboard(keyboardCherry);
+    setupKeyboard(keyboardDango);
+
+    // もうかい (リトライ) ボタン
+    retryBtn.addEventListener('click', async () => {
+      await audio.unlock();
+      audio.stopAll();
+
+      // 初期化してさくらんぼ画面に戻る
+      cherryCount = 0;
+      dangoCount = 0;
+      isProcessingStageClear = false;
+
+      for (let i = 1; i <= 3; i++) {
+        document.getElementById(`cherry-${i}`).classList.remove('visible');
+        document.getElementById(`dango-${i}`).classList.remove('visible');
+      }
+      keyboardCherry.classList.remove('disabled');
+      keyboardDango.classList.remove('disabled');
+
+      showScreen('cherry');
     });
   </script>
 </body>
