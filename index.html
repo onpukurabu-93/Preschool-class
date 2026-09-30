@@ -43,7 +43,7 @@
       display: flex;
     }
 
-    /* 右上固定のリセットボタン（↻） */
+    /* 右上固定のリセットボタン */
     #btn-reset {
       position: fixed;
       top: 12px;
@@ -225,13 +225,14 @@
       display: none;
     }
 
+    /* お団子は画像そのままの向き */
     .is-dango {
-      transform: rotate(90deg) !important;
+      transform: none !important;
       transition: none !important;
     }
 
     .tray-item-dango {
-      transform: rotate(90deg) !important;
+      transform: none !important;
       transition: none !important;
     }
 
@@ -619,17 +620,18 @@
       }
 
       .tray-item-dango {
-        transform: rotate(0deg) !important;
+        transform: none !important;
       }
     }
   </style>
 </head>
+
 <body>
 
-  <!-- 右上固定コントロール：最初に戻るボタン（↻） -->
+  <!-- 右上固定コントロール：最初に戻るボタン -->
   <button id="btn-reset" title="最初に戻る">↻</button>
 
-  <!-- 1. トントン画面（スタート） -->
+  <!-- 1. トントン画面 -->
   <section id="screen-start" class="screen active">
     <div class="start-card">
       <div class="start-title">たのしい ピアノあそび</div>
@@ -639,6 +641,7 @@
 
   <!-- 2. メインゲーム画面 -->
   <section id="screen-game" class="screen">
+
     <!-- 左：ドラッグ元 -->
     <div class="game-sidebar-left">
       <div class="source-box">
@@ -654,7 +657,6 @@
     <!-- 中央：鍵盤 -->
     <div class="game-center">
       <div id="keyboard-wrapper">
-        <!-- JSで鍵盤・判定枠を生成 -->
       </div>
     </div>
 
@@ -665,11 +667,13 @@
         <div id="tray-area"></div>
       </div>
     </div>
+
   </section>
 
   <!-- 3. くす玉・全クリア画面 -->
   <section id="screen-reward" class="screen">
     <canvas id="confetti-canvas"></canvas>
+
     <div class="reward-content">
       <div class="reward-emoji">🎊</div>
       <div class="reward-title">ぜんぶ クリア！</div>
@@ -678,13 +682,52 @@
   </section>
 
   <script>
-    /* 1. 画像探査リスト */
-    const FILES_STAGE1_BG = ["kenban1.png", "Kenban1.png", "kenban1.PNG", "Kenban1.PNG", "KENBAN1.PNG", "kenban1.jpg"];
-    const FILES_STAGE2_BG = ["kenban2.png", "Kenban2.png", "kenban2.PNG", "Kenban2.PNG", "KENBAN2.PNG", "kenban2.jpg"];
-    const FILES_SAKURANBO = ["sakuranbo.png", "Sakuranbo.png", "sakuranbo.PNG", "Sakuranbo.PNG", "SAKURANBO.PNG", "sakuranbo.jpg"];
-    const FILES_KUSHIDANGO = ["kushidango.png", "Kushidango.png", "kushidango.PNG", "Kushidango.PNG", "KUSHIDANGO.PNG", "kushidango.jpg"];
 
-    /* 2. ゲーム状態変数 */
+    /* =========================================================
+       1. 画像探査リスト
+       ========================================================= */
+
+    const FILES_STAGE1_BG = [
+      "kenban1.png",
+      "Kenban1.png",
+      "kenban1.PNG",
+      "Kenban1.PNG",
+      "KENBAN1.PNG",
+      "kenban1.jpg"
+    ];
+
+    const FILES_STAGE2_BG = [
+      "kenban2.png",
+      "Kenban2.png",
+      "kenban2.PNG",
+      "Kenban2.PNG",
+      "KENBAN2.PNG",
+      "kenban2.jpg"
+    ];
+
+    const FILES_SAKURANBO = [
+      "sakuranbo.png",
+      "Sakuranbo.png",
+      "sakuranbo.PNG",
+      "Sakuranbo.PNG",
+      "SAKURANBO.PNG",
+      "sakuranbo.jpg"
+    ];
+
+    const FILES_KUSHIDANGO = [
+      "kushidango.png",
+      "Kushidango.png",
+      "kushidango.PNG",
+      "Kushidango.PNG",
+      "KUSHIDANGO.PNG",
+      "kushidango.jpg"
+    ];
+
+
+    /* =========================================================
+       2. ゲーム状態変数
+       ========================================================= */
+
     let currentStage = 1;
     let successCount = 0;
     let isLocked = false;
@@ -693,10 +736,18 @@
     let loadedPathKushidango = "";
 
     let isDragging = false;
-    let startX = 0, startY = 0;
-    let currentX = 0, currentY = 0;
 
-    /* DOM要素 */
+    let startX = 0;
+    let startY = 0;
+
+    let currentX = 0;
+    let currentY = 0;
+
+
+    /* =========================================================
+       DOM要素
+       ========================================================= */
+
     const screenStart = document.getElementById('screen-start');
     const screenGame = document.getElementById('screen-game');
     const screenReward = document.getElementById('screen-reward');
@@ -708,18 +759,31 @@
     const draggable = document.getElementById('draggable');
     const itemImg = document.getElementById('item-img');
     const emojiFallback = document.getElementById('emoji-fallback');
+
     const keyboardWrapper = document.getElementById('keyboard-wrapper');
     const trayArea = document.getElementById('tray-area');
 
-    /* 3. 音声再生エンジン */
+
+    /* =========================================================
+       3. 音声再生エンジン
+       ========================================================= */
+
     const audioPlayer = new Audio();
 
+    /*
+      iPad / iPhoneの音声再生を有効にするための
+      無音音声。
+    */
     function unlockAudioIOS() {
-      audioPlayer.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==";
+      audioPlayer.src =
+        "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==";
+
       audioPlayer.play().catch(() => {});
     }
 
+
     function playMp3(filename, onEndedCallback) {
+
       audioPlayer.pause();
       audioPlayer.currentTime = 0;
       audioPlayer.src = filename;
@@ -728,177 +792,438 @@
       let safeTimeoutId = null;
 
       const finishHandler = () => {
+
         if (!hasExecuted) {
+
           hasExecuted = true;
-          if (safeTimeoutId) clearTimeout(safeTimeoutId);
+
+          if (safeTimeoutId) {
+            clearTimeout(safeTimeoutId);
+          }
+
           audioPlayer.onended = null;
           audioPlayer.onerror = null;
-          if (onEndedCallback) onEndedCallback();
-        }
-      };
 
-      if (onEndedCallback) {
-        audioPlayer.onended = finishHandler;
-        audioPlayer.onerror = finishHandler;
-        safeTimeoutId = setTimeout(finishHandler, 6000);
-      } else {
-        audioPlayer.onended = null;
-        audioPlayer.onerror = null;
-      }
-
-      audioPlayer.play().catch(err => {
-        console.log("Audio play failed or blocked: " + filename, err);
-        finishHandler();
-      });
-    }
-
-    /* 4. 画面切り替え */
-    function showScreen(targetScreen) {
-      [screenStart, screenGame, screenReward].forEach(s => s.classList.remove('active'));
-      targetScreen.classList.add('active');
-
-      if (targetScreen !== screenReward) {
-        btnReset.classList.remove('pika-pika');
-      }
-    }
-
-    /* 5. 画像自動探査読み込み */
-    function loadImageWithFallback(imgElement, candidates, fallbackEmoji, onSuccessCallback) {
-      let index = 0;
-      imgElement.style.display = 'block';
-      if (emojiFallback) emojiFallback.style.display = 'none';
-
-      imgElement.onerror = function() {
-        index++;
-        if (index < candidates.length) {
-          imgElement.src = candidates[index];
-        } else {
-          imgElement.style.display = 'none';
-          if (emojiFallback) {
-            emojiFallback.style.display = 'block';
-            emojiFallback.textContent = fallbackEmoji;
+          if (onEndedCallback) {
+            onEndedCallback();
           }
         }
       };
 
-      imgElement.onload = function() {
-        if (onSuccessCallback) onSuccessCallback(imgElement.src);
+
+      if (onEndedCallback) {
+
+        audioPlayer.onended = finishHandler;
+        audioPlayer.onerror = finishHandler;
+
+        safeTimeoutId = setTimeout(
+          finishHandler,
+          6000
+        );
+
+      } else {
+
+        audioPlayer.onended = null;
+        audioPlayer.onerror = null;
+      }
+
+
+      audioPlayer.play().catch(err => {
+
+        console.log(
+          "Audio play failed or blocked: " + filename,
+          err
+        );
+
+        finishHandler();
+
+      });
+    }
+
+
+    /*
+      スタート専用。
+
+      ユーザーが「トントン！」を押した瞬間の
+      ユーザー操作を利用して再生する。
+    */
+    function playStart1FromUserTap() {
+
+      audioPlayer.pause();
+
+      audioPlayer.currentTime = 0;
+
+      audioPlayer.src = "start1.mp3";
+
+      audioPlayer.onended = null;
+      audioPlayer.onerror = null;
+
+      const playPromise = audioPlayer.play();
+
+      if (playPromise !== undefined) {
+
+        playPromise.catch(err => {
+
+          console.log(
+            "start1.mp3 play failed:",
+            err
+          );
+
+        });
+
+      }
+    }
+
+
+    /* =========================================================
+       4. 画面切り替え
+       ========================================================= */
+
+    function showScreen(targetScreen) {
+
+      [
+        screenStart,
+        screenGame,
+        screenReward
+      ].forEach(s => {
+
+        s.classList.remove('active');
+
+      });
+
+      targetScreen.classList.add('active');
+
+
+      if (targetScreen !== screenReward) {
+
+        btnReset.classList.remove('pika-pika');
+
+      }
+    }
+
+
+    /* =========================================================
+       5. 画像自動探査読み込み
+       ========================================================= */
+
+    function loadImageWithFallback(
+      imgElement,
+      candidates,
+      fallbackEmoji,
+      onSuccessCallback
+    ) {
+
+      let index = 0;
+
+      imgElement.style.display = 'block';
+
+      if (emojiFallback) {
+        emojiFallback.style.display = 'none';
+      }
+
+
+      imgElement.onerror = function() {
+
+        index++;
+
+        if (index < candidates.length) {
+
+          imgElement.src = candidates[index];
+
+        } else {
+
+          imgElement.style.display = 'none';
+
+          if (emojiFallback) {
+
+            emojiFallback.style.display = 'block';
+
+            emojiFallback.textContent =
+              fallbackEmoji;
+
+          }
+        }
       };
+
+
+      imgElement.onload = function() {
+
+        if (onSuccessCallback) {
+
+          onSuccessCallback(
+            imgElement.src
+          );
+
+        }
+      };
+
 
       imgElement.src = candidates[0];
     }
 
-    function setKeyboardBackgroundWithFallback(candidates) {
+
+    function setKeyboardBackgroundWithFallback(
+      candidates
+    ) {
+
       let index = 0;
-      keyboardWrapper.classList.remove('has-custom-bg');
+
+      keyboardWrapper.classList.remove(
+        'has-custom-bg'
+      );
+
 
       function tryNext() {
+
         if (index >= candidates.length) {
-          keyboardWrapper.style.backgroundImage = 'none';
+
+          keyboardWrapper.style.backgroundImage =
+            'none';
+
           return;
         }
 
+
         const img = new Image();
-        const testUrl = candidates[index];
+
+        const testUrl =
+          candidates[index];
+
 
         img.onload = function() {
-          keyboardWrapper.style.backgroundImage = `url('${testUrl}')`;
-          keyboardWrapper.classList.add('has-custom-bg');
+
+          keyboardWrapper.style.backgroundImage =
+            `url('${testUrl}')`;
+
+          keyboardWrapper.classList.add(
+            'has-custom-bg'
+          );
         };
 
+
         img.onerror = function() {
+
           index++;
+
           tryNext();
         };
+
 
         img.src = testUrl;
       }
 
+
       tryNext();
     }
 
-    /* 6. ステージ構築 */
+
+    /* =========================================================
+       6. ステージ構築
+       ========================================================= */
+
     function startStage(stageNum) {
+
       currentStage = stageNum;
+
       successCount = 0;
+
       isLocked = false;
+
       trayArea.innerHTML = '';
+
       resetDraggablePosition();
 
-      if (stageNum === 1) {
-        draggable.classList.remove('stage2-size');
-        itemImg.classList.remove('is-dango');
 
-        setKeyboardBackgroundWithFallback(FILES_STAGE1_BG);
-        loadImageWithFallback(itemImg, FILES_SAKURANBO, "🍒", path => {
-          loadedPathSakuranbo = path;
-        });
+      /* -------------------------
+         ステージ1
+         ------------------------- */
+
+      if (stageNum === 1) {
+
+        draggable.classList.remove(
+          'stage2-size'
+        );
+
+        itemImg.classList.remove(
+          'is-dango'
+        );
+
+
+        setKeyboardBackgroundWithFallback(
+          FILES_STAGE1_BG
+        );
+
+
+        loadImageWithFallback(
+          itemImg,
+          FILES_SAKURANBO,
+          "🍒",
+          path => {
+
+            loadedPathSakuranbo = path;
+
+          }
+        );
+
 
         keyboardWrapper.innerHTML = `
+
           <div class="piano-keyboard">
+
             <div class="white-key"></div>
             <div class="white-key"></div>
             <div class="white-key"></div>
-            <div class="black-keys-target stage1-target" id="target-area">
+
+            <div
+              class="black-keys-target stage1-target"
+              id="target-area"
+            >
+
               <div class="black-key"></div>
               <div class="black-key"></div>
+
             </div>
+
           </div>
+
         `;
 
+
+        /*
+          ここでは音声を鳴らさない。
+          トントンボタン側で鳴らす。
+        */
+
         showScreen(screenGame);
+
+
+      /* -------------------------
+         ステージ2
+         ------------------------- */
 
       } else if (stageNum === 2) {
-        draggable.classList.add('stage2-size');
-        itemImg.classList.add('is-dango');
 
-        setKeyboardBackgroundWithFallback(FILES_STAGE2_BG);
-        loadImageWithFallback(itemImg, FILES_KUSHIDANGO, "🍡", path => {
-          loadedPathKushidango = path;
-        });
+        draggable.classList.add(
+          'stage2-size'
+        );
+
+        /*
+          お団子は回転させない。
+          新しく入れ替えた画像を
+          そのまま表示する。
+        */
+        itemImg.classList.remove(
+          'is-dango'
+        );
+
+
+        setKeyboardBackgroundWithFallback(
+          FILES_STAGE2_BG
+        );
+
+
+        loadImageWithFallback(
+          itemImg,
+          FILES_KUSHIDANGO,
+          "🍡",
+          path => {
+
+            loadedPathKushidango = path;
+
+          }
+        );
+
 
         keyboardWrapper.innerHTML = `
+
           <div class="piano-keyboard">
+
             <div class="white-key"></div>
             <div class="white-key"></div>
             <div class="white-key"></div>
             <div class="white-key"></div>
-            <div class="black-keys-target stage2-target" id="target-area">
+
+            <div
+              class="black-keys-target stage2-target"
+              id="target-area"
+            >
+
               <div class="black-key"></div>
               <div class="black-key"></div>
               <div class="black-key"></div>
+
             </div>
+
           </div>
+
         `;
 
+
         showScreen(screenGame);
+
         playMp3("start2.mp3");
       }
     }
 
-    /* お皿にごほうび追加 */
+
+    /* =========================================================
+       お皿にごほうび追加
+       ========================================================= */
+
     function addItemToTray() {
-      const trayImg = document.createElement('img');
+
+      const trayImg =
+        document.createElement('img');
+
 
       if (currentStage === 1) {
-        trayImg.className = 'tray-item';
-        trayImg.src = loadedPathSakuranbo || itemImg.src;
+
+        trayImg.className =
+          'tray-item';
+
+        trayImg.src =
+          loadedPathSakuranbo ||
+          itemImg.src;
+
+
       } else {
-        trayImg.className = 'tray-item tray-item-dango';
-        trayImg.src = loadedPathKushidango || itemImg.src;
+
+        /*
+          お団子は回転なし
+        */
+
+        trayImg.className =
+          'tray-item tray-item-dango';
+
+        trayImg.src =
+          loadedPathKushidango ||
+          itemImg.src;
       }
 
-      trayArea.appendChild(trayImg);
+
+      trayArea.appendChild(
+        trayImg
+      );
     }
 
-    /* 7. ドラッグ＆ドロップ ＆ 判定ロジック */
+
+    /* =========================================================
+       7. ドラッグ＆ドロップ
+       ========================================================= */
+
     function getEventPos(e) {
-      if (e.touches && e.touches.length > 0) {
+
+      if (
+        e.touches &&
+        e.touches.length > 0
+      ) {
+
         return {
           x: e.touches[0].clientX,
           y: e.touches[0].clientY
         };
       }
+
 
       return {
         x: e.clientX,
@@ -906,100 +1231,225 @@
       };
     }
 
+
     function handleDragStart(e) {
+
       unlockAudioIOS();
 
-      if (isDragging || isLocked) return;
+
+      if (
+        isDragging ||
+        isLocked
+      ) {
+        return;
+      }
+
 
       isDragging = true;
 
-      draggable.classList.remove('snap-back');
+      draggable.classList.remove(
+        'snap-back'
+      );
 
-      const pos = getEventPos(e);
-      startX = pos.x - currentX;
-      startY = pos.y - currentY;
 
-      if (e.cancelable) e.preventDefault();
+      const pos =
+        getEventPos(e);
+
+
+      startX =
+        pos.x - currentX;
+
+      startY =
+        pos.y - currentY;
+
+
+      if (e.cancelable) {
+        e.preventDefault();
+      }
     }
+
 
     function handleDragMove(e) {
-      if (!isDragging) return;
 
-      if (e.cancelable) e.preventDefault();
+      if (!isDragging) {
+        return;
+      }
 
-      const pos = getEventPos(e);
-      currentX = pos.x - startX;
-      currentY = pos.y - startY;
+
+      if (e.cancelable) {
+        e.preventDefault();
+      }
+
+
+      const pos =
+        getEventPos(e);
+
+
+      currentX =
+        pos.x - startX;
+
+      currentY =
+        pos.y - startY;
+
 
       draggable.style.transform =
-        `translate3d(${currentX}px, ${currentY}px, 0px)`;
+        `translate3d(
+          ${currentX}px,
+          ${currentY}px,
+          0px
+        )`;
     }
 
+
     function handleDragEnd() {
-      if (!isDragging) return;
+
+      if (!isDragging) {
+        return;
+      }
+
 
       isDragging = false;
 
-      const targetArea = document.getElementById('target-area');
-      if (!targetArea) return;
 
-      const itemRect = draggable.getBoundingClientRect();
-      const targetRect = targetArea.getBoundingClientRect();
+      const targetArea =
+        document.getElementById(
+          'target-area'
+        );
 
-      const itemCenterX = itemRect.left + itemRect.width / 2;
-      const itemCenterY = itemRect.top + itemRect.height / 2;
+
+      if (!targetArea) {
+        return;
+      }
+
+
+      const itemRect =
+        draggable.getBoundingClientRect();
+
+      const targetRect =
+        targetArea.getBoundingClientRect();
+
+
+      const itemCenterX =
+        itemRect.left +
+        itemRect.width / 2;
+
+      const itemCenterY =
+        itemRect.top +
+        itemRect.height / 2;
+
 
       const MARGIN_X = 22;
       const MARGIN_Y_TOP = 12;
       const MARGIN_Y_BOTTOM = -10;
 
+
       const isHit =
-        itemCenterX >= (targetRect.left - MARGIN_X) &&
-        itemCenterX <= (targetRect.right + MARGIN_X) &&
-        itemCenterY >= (targetRect.top - MARGIN_Y_TOP) &&
-        itemCenterY <= (targetRect.bottom + MARGIN_Y_BOTTOM);
+        itemCenterX >=
+          (targetRect.left - MARGIN_X) &&
+
+        itemCenterX <=
+          (targetRect.right + MARGIN_X) &&
+
+        itemCenterY >=
+          (targetRect.top - MARGIN_Y_TOP) &&
+
+        itemCenterY <=
+          (targetRect.bottom + MARGIN_Y_BOTTOM);
+
 
       if (isHit) {
-        /* 正解！ */
+
+        /* 正解 */
+
         successCount++;
+
         addItemToTray();
+
         resetDraggablePosition();
 
+
         if (successCount === 1) {
-          playMp3("success1.mp3");
+
+          playMp3(
+            "success1.mp3"
+          );
+
 
         } else if (successCount === 2) {
-          playMp3("success2.mp3");
+
+          playMp3(
+            "success2.mp3"
+          );
+
 
         } else if (successCount >= 3) {
-          /* 3つ成功した瞬間に操作をガード */
+
+          /*
+            3つ成功した瞬間に操作をガード
+          */
+
           isLocked = true;
+
 
           if (currentStage === 1) {
 
-            /* さくらんぼ3つ目：
-               置いた直後に3ko.mp3を再生
-               音声終了後にステージ2へ */
-            playMp3("3ko.mp3", () => {
-              startStage(2);
-            });
+            /*
+              さくらんぼ3つ目
+
+              置いた直後に3ko.mp3
+              ↓
+              音声終了
+              ↓
+              ステージ2
+            */
+
+            playMp3(
+              "3ko.mp3",
+              () => {
+
+                startStage(2);
+
+              }
+            );
+
 
           } else if (currentStage === 2) {
 
-            /* お団子3つ目：
-               置いた直後にclear2.mp3を再生
-               音声終了後にくす玉画面
-               その後retry.mp3 */
-            playMp3("clear2.mp3", () => {
-              showRewardScreen();
-              playMp3("retry.mp3");
-            });
+            /*
+              お団子3つ目
+
+              置いた直後にclear2.mp3
+              ↓
+              音声終了
+              ↓
+              くす玉画面
+              ↓
+              retry.mp3
+            */
+
+            playMp3(
+              "clear2.mp3",
+              () => {
+
+                showRewardScreen();
+
+                playMp3(
+                  "retry.mp3"
+                );
+
+              }
+            );
           }
         }
 
+
       } else {
+
         /* 不正解 */
-        draggable.classList.add('snap-back');
+
+        draggable.classList.add(
+          'snap-back'
+        );
 
         currentX = 0;
         currentY = 0;
@@ -1009,8 +1459,12 @@
       }
     }
 
+
     function resetDraggablePosition() {
-      draggable.classList.remove('snap-back');
+
+      draggable.classList.remove(
+        'snap-back'
+      );
 
       currentX = 0;
       currentY = 0;
@@ -1019,12 +1473,17 @@
         'translate3d(0px, 0px, 0px)';
     }
 
-    /* イベント登録 */
+
+    /* =========================================================
+       イベント登録
+       ========================================================= */
+
     draggable.addEventListener(
       'touchstart',
       handleDragStart,
       { passive: false }
     );
+
 
     window.addEventListener(
       'touchmove',
@@ -1032,51 +1491,86 @@
       { passive: false }
     );
 
+
     window.addEventListener(
       'touchend',
       handleDragEnd,
       { passive: false }
     );
 
+
     draggable.addEventListener(
       'mousedown',
       handleDragStart
     );
+
 
     window.addEventListener(
       'mousemove',
       handleDragMove
     );
 
+
     window.addEventListener(
       'mouseup',
       handleDragEnd
     );
 
-    /* 8. くす玉・紙吹雪演出 ＆ ピカピカボタン処理 */
-    const canvas = document.getElementById('confetti-canvas');
-    const ctx = canvas.getContext('2d');
+
+    /* =========================================================
+       8. くす玉・紙吹雪
+       ========================================================= */
+
+    const canvas =
+      document.getElementById(
+        'confetti-canvas'
+      );
+
+    const ctx =
+      canvas.getContext('2d');
+
 
     let particles = [];
+
     let animationId = null;
 
+
     function showRewardScreen() {
-      showScreen(screenReward);
-      btnReset.classList.add('pika-pika');
+
+      showScreen(
+        screenReward
+      );
+
+      btnReset.classList.add(
+        'pika-pika'
+      );
+
       startConfetti();
     }
 
+
     function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+
+      canvas.width =
+        window.innerWidth;
+
+      canvas.height =
+        window.innerHeight;
     }
 
-    window.addEventListener('resize', resizeCanvas);
+
+    window.addEventListener(
+      'resize',
+      resizeCanvas
+    );
+
 
     function startConfetti() {
+
       resizeCanvas();
 
       particles = [];
+
 
       const colors = [
         '#f43f5e',
@@ -1087,23 +1581,65 @@
         '#ec4899'
       ];
 
-      for (let i = 0; i < 120; i++) {
+
+      for (
+        let i = 0;
+        i < 120;
+        i++
+      ) {
+
         particles.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height - canvas.height,
-          size: Math.random() * 14 + 6,
-          color: colors[Math.floor(Math.random() * colors.length)],
-          vy: Math.random() * 3 + 2,
-          vx: Math.random() * 2 - 1,
-          rotation: Math.random() * 360,
-          rotSpeed: Math.random() * 4 - 2
+
+          x:
+            Math.random() *
+            canvas.width,
+
+          y:
+            Math.random() *
+              canvas.height -
+            canvas.height,
+
+          size:
+            Math.random() *
+              14 +
+            6,
+
+          color:
+            colors[
+              Math.floor(
+                Math.random() *
+                colors.length
+              )
+            ],
+
+          vy:
+            Math.random() *
+              3 +
+            2,
+
+          vx:
+            Math.random() *
+              2 -
+            1,
+
+          rotation:
+            Math.random() *
+            360,
+
+          rotSpeed:
+            Math.random() *
+              4 -
+            2
         });
       }
+
 
       renderConfetti();
     }
 
+
     function renderConfetti() {
+
       ctx.clearRect(
         0,
         0,
@@ -1111,75 +1647,170 @@
         canvas.height
       );
 
-      particles.forEach((p) => {
-        p.y += p.vy;
-        p.x += p.vx;
-        p.rotation += p.rotSpeed;
 
-        if (p.y > canvas.height) {
-          p.y = -20;
-          p.x = Math.random() * canvas.width;
+      particles.forEach(
+        (p) => {
+
+          p.y += p.vy;
+          p.x += p.vx;
+          p.rotation +=
+            p.rotSpeed;
+
+
+          if (
+            p.y >
+            canvas.height
+          ) {
+
+            p.y = -20;
+
+            p.x =
+              Math.random() *
+              canvas.width;
+          }
+
+
+          ctx.save();
+
+
+          ctx.translate(
+            p.x,
+            p.y
+          );
+
+
+          ctx.rotate(
+            (p.rotation *
+              Math.PI) /
+            180
+          );
+
+
+          ctx.fillStyle =
+            p.color;
+
+
+          ctx.fillRect(
+            -p.size / 2,
+            -p.size / 2,
+            p.size,
+            p.size
+          );
+
+
+          ctx.restore();
+
         }
+      );
 
-        ctx.save();
 
-        ctx.translate(p.x, p.y);
-        ctx.rotate(
-          (p.rotation * Math.PI) / 180
+      animationId =
+        requestAnimationFrame(
+          renderConfetti
         );
-
-        ctx.fillStyle = p.color;
-
-        ctx.fillRect(
-          -p.size / 2,
-          -p.size / 2,
-          p.size,
-          p.size
-        );
-
-        ctx.restore();
-      });
-
-      animationId = requestAnimationFrame(renderConfetti);
     }
+
 
     function stopConfetti() {
+
       if (animationId) {
-        cancelAnimationFrame(animationId);
+
+        cancelAnimationFrame(
+          animationId
+        );
+
+        animationId = null;
       }
     }
 
-    /* 9. リセット＆再プレイ */
 
-    /* トントンを押したら、
-       先にゲーム画面へ切り替えてからstart1.mp3 */
-    btnTonton.addEventListener('click', () => {
-      unlockAudioIOS();
-      startStage(1);
-      playMp3("start1.mp3");
-    });
+    /* =========================================================
+       9. リセット＆再プレイ
+       ========================================================= */
 
-    screenStart.addEventListener('click', (e) => {
-      if (e.target === screenStart) {
-        unlockAudioIOS();
+
+    /*
+      ★ 今回の重要修正
+
+      トントンを押した瞬間のユーザー操作から
+      start1.mp3を直接再生する。
+
+      先にゲーム画面へ切り替える。
+      そのあと同じタップ処理の中で音声再生。
+    */
+
+    btnTonton.addEventListener(
+      'click',
+      () => {
+
         startStage(1);
-        playMp3("start1.mp3");
+
+        playStart1FromUserTap();
+
       }
-    });
+    );
 
-    btnReset.addEventListener('click', () => {
-      isLocked = false;
-      audioPlayer.pause();
-      stopConfetti();
-      showScreen(screenStart);
-    });
 
-    btnReplay.addEventListener('click', () => {
-      isLocked = false;
-      audioPlayer.pause();
-      stopConfetti();
-      showScreen(screenStart);
-    });
+    /*
+      スタート画面のボタン以外を
+      タップした場合もスタート可能。
+    */
+
+    screenStart.addEventListener(
+      'click',
+      (e) => {
+
+        if (
+          e.target === screenStart
+        ) {
+
+          startStage(1);
+
+          playStart1FromUserTap();
+
+        }
+      }
+    );
+
+
+    /* 最初に戻る */
+
+    btnReset.addEventListener(
+      'click',
+      () => {
+
+        isLocked = false;
+
+        audioPlayer.pause();
+
+        stopConfetti();
+
+        showScreen(
+          screenStart
+        );
+      }
+    );
+
+
+    /* もう一度あそぶ */
+
+    btnReplay.addEventListener(
+      'click',
+      () => {
+
+        isLocked = false;
+
+        audioPlayer.pause();
+
+        stopConfetti();
+
+        showScreen(
+          screenStart
+        );
+      }
+    );
+
   </script>
+
 </body>
 </html>
