@@ -43,7 +43,6 @@
       display: flex;
     }
 
-    /* 右上固定のリセットボタン（↻） */
     #btn-reset {
       position: fixed;
       top: 12px;
@@ -226,12 +225,12 @@
     }
 
     .is-dango {
-      transform: none !important;
+      transform: rotate(0deg) !important;
       transition: none !important;
     }
 
     .tray-item-dango {
-      transform: none !important;
+      transform: rotate(0deg) !important;
       transition: none !important;
     }
 
@@ -619,7 +618,7 @@
       }
 
       .tray-item-dango {
-        transform: none !important;
+        transform: rotate(0deg) !important;
       }
     }
   </style>
@@ -639,7 +638,6 @@
 
   <!-- 2. メインゲーム画面 -->
   <section id="screen-game" class="screen">
-    <!-- 左：ドラッグ元 -->
     <div class="game-sidebar-left">
       <div class="source-box">
         <div id="draggable">
@@ -651,14 +649,11 @@
       </div>
     </div>
 
-    <!-- 中央：鍵盤 -->
     <div class="game-center">
       <div id="keyboard-wrapper">
-        <!-- JSで鍵盤・判定枠を生成 -->
       </div>
     </div>
 
-    <!-- 右：ごほうびトレイ -->
     <div class="game-sidebar-right">
       <div class="tray-container">
         <div class="tray-title">できたよ！</div>
@@ -681,10 +676,7 @@
     /* 1. 画像探査リスト */
     const FILES_STAGE1_BG = ["kenban1.png", "Kenban1.png", "kenban1.PNG", "Kenban1.PNG", "KENBAN1.PNG", "kenban1.jpg"];
     const FILES_STAGE2_BG = ["kenban2.png", "Kenban2.png", "kenban2.PNG", "Kenban2.PNG", "KENBAN2.PNG", "kenban2.jpg"];
-
-    /* さくらんぼは sakuranbo.png を使用 */
-    const FILES_SAKURANBO = ["sakuranbo.png"];
-
+    const FILES_SAKURANBO = ["sakuranbo.png", "Sakuranbo.png", "sakuranbo.PNG", "Sakuranbo.PNG", "SAKURANBO.PNG", "sakuranbo.jpg"];
     const FILES_KUSHIDANGO = ["kushidango.png", "Kushidango.png", "kushidango.PNG", "Kushidango.PNG", "KUSHIDANGO.PNG", "kushidango.jpg"];
 
     /* 2. ゲーム状態変数 */
@@ -992,10 +984,13 @@
             /* お団子3つ目：
                置いた直後にclear2.mp3を再生
                音声終了後にくす玉画面
-               その後retry.mp3 */
+               その後ファンファーレ
+               ファンファーレ終了後retry.mp3 */
             playMp3("clear2.mp3", () => {
               showRewardScreen();
-              playMp3("retry.mp3");
+              playMp3("fanfare.mp3", () => {
+                playMp3("retry.mp3");
+              });
             });
           }
         }
