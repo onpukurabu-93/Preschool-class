@@ -7,7 +7,7 @@
 
   <style>
     /* =========================================================
-       1. 基本スタイル
+       1. 基本スタイル & 全体設定
        ========================================================= */
     * {
       box-sizing: border-box;
@@ -22,10 +22,7 @@
       width: 100%;
       height: 100%;
       overflow: hidden;
-      font-family: 'Hiragino Maru Gothic ProN',
-                   'Rounded Mplus 1c',
-                   'Meiryo',
-                   sans-serif;
+      font-family: 'Hiragino Maru Gothic ProN', 'Rounded Mplus 1c', 'Meiryo', sans-serif;
       background: linear-gradient(135deg, #e0f2fe 0%, #fef3c7 100%);
       color: #334155;
     }
@@ -47,9 +44,6 @@
       display: flex;
     }
 
-    /* =========================================================
-       2. 最初に戻るボタン
-       ========================================================= */
     #btn-reset {
       position: fixed;
       top: 12px;
@@ -83,25 +77,19 @@
     @keyframes pikaPikaGlow {
       0%, 100% {
         transform: scale(1);
-        box-shadow:
-          0 0 12px #ef4444,
-          0 0 25px #f59e0b,
-          0 0 35px #fef08a;
+        box-shadow: 0 0 12px #ef4444, 0 0 25px #f59e0b, 0 0 35px #fef08a;
         background: #ef4444;
       }
-
       50% {
         transform: scale(1.18);
-        box-shadow:
-          0 0 30px #f43f5e,
-          0 0 50px #fbbf24,
-          0 0 70px #ffffff;
+        box-shadow: 0 0 30px #f43f5e, 0 0 50px #fbbf24, 0 0 70px #ffffff;
         background: #f43f5e;
       }
     }
 
+
     /* =========================================================
-       3. スタート画面
+       2. スタート画面
        ========================================================= */
     #screen-start {
       background: linear-gradient(135deg, #ffedd5 0%, #fef08a 100%);
@@ -146,17 +134,13 @@
     }
 
     @keyframes pulse {
-      0%, 100% {
-        transform: scale(1);
-      }
-
-      50% {
-        transform: scale(1.06);
-      }
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.06); }
     }
 
+
     /* =========================================================
-       4. メインゲーム画面
+       3. メインゲーム画面
        ========================================================= */
     #screen-game {
       display: none;
@@ -217,8 +201,7 @@
     }
 
     #draggable.snap-back {
-      transition:
-        transform 0.28s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      transition: transform 0.28s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
     #image-container {
@@ -254,8 +237,9 @@
       transition: none !important;
     }
 
+
     /* =========================================================
-       5. 中央：鍵盤
+       中央エリア：鍵盤
        ========================================================= */
     .game-center {
       width: 48%;
@@ -288,6 +272,15 @@
       box-shadow: 0 20px 45px rgba(0,0,0,0.28);
     }
 
+    /*
+      背景画像がある場合は元の鍵盤を隠す。
+      ただし、判定エリアも一緒に隠すため、
+      黒鍵ヒントは .key-hint として別に表示する。
+    */
+    #keyboard-wrapper.has-custom-bg .piano-keyboard {
+      opacity: 0;
+    }
+
     .white-key {
       width: 130px;
       height: 420px;
@@ -308,25 +301,6 @@
       box-shadow: none !important;
       outline: none !important;
       z-index: 20;
-
-      /* ★ 追加：正解エリアの光 */
-      transition:
-        filter 0.12s ease,
-        opacity 0.12s ease;
-    }
-
-    /* ★ 追加：近づいたときの「ここですよ」 */
-    .black-keys-target.near-hit {
-      filter:
-        drop-shadow(0 0 8px rgba(250, 204, 21, 0.95))
-        drop-shadow(0 0 18px rgba(251, 191, 36, 0.85));
-    }
-
-    .black-keys-target.near-hit .black-key {
-      background: #facc15;
-      box-shadow:
-        0 0 12px rgba(250, 204, 21, 0.95),
-        inset 0 -8px 0 rgba(217, 119, 6, 0.22);
     }
 
     .stage1-target {
@@ -346,36 +320,131 @@
       height: 250px;
       background: #0f172a;
       border-radius: 0 0 12px 12px;
-      transition:
-        background 0.12s ease,
-        box-shadow 0.12s ease;
     }
 
     #keyboard-wrapper.has-custom-bg .black-key {
       opacity: 0;
     }
 
-    #keyboard-wrapper.has-custom-bg .black-keys-target.near-hit .black-key {
-      opacity: 1;
-      background: rgba(250, 204, 21, 0.72);
-    }
-
-    #keyboard-wrapper.has-custom-bg .stage1-target {
-      top: 10%;
-      left: 36%;
-      width: 28%;
-      height: 50%;
-    }
-
-    #keyboard-wrapper.has-custom-bg .stage2-target {
-      top: 10%;
-      left: 30%;
-      width: 40%;
-      height: 50%;
-    }
 
     /* =========================================================
-       6. 右：ごほうびトレイ
+       ★ 黒鍵の「ここですよ」ヒント
+       大きな黄色い四角ではなく、
+       黒鍵の形に合わせた細い光だけを表示する
+       ========================================================= */
+
+    .key-hints {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 15;
+      display: none;
+    }
+
+    #keyboard-wrapper.has-custom-bg .key-hints {
+      display: block;
+    }
+
+    .key-hint {
+      position: absolute;
+      display: block;
+      opacity: 0;
+      pointer-events: none;
+
+      /*
+        黒鍵そのものを隠すのではなく、
+        黒鍵の上に「光」を重ねる。
+      */
+      background: rgba(250, 204, 21, 0.48);
+
+      border-radius: 0 0 10px 10px;
+
+      box-shadow:
+        0 0 8px rgba(250, 204, 21, 0.75),
+        0 0 18px rgba(250, 204, 21, 0.65),
+        0 0 30px rgba(250, 204, 21, 0.45);
+
+      transform: scale(0.96);
+      transition:
+        opacity 0.18s ease,
+        transform 0.18s ease;
+    }
+
+    /*
+      ステージ1
+      元の鍵盤画像の黒鍵位置に合わせて、
+      2本だけを細く表示する。
+    */
+    .key-hint.stage1-hint1 {
+      left: 40.5%;
+      top: 18%;
+      width: 10.5%;
+      height: 43%;
+    }
+
+    .key-hint.stage1-hint2 {
+      left: 53.5%;
+      top: 18%;
+      width: 10.5%;
+      height: 43%;
+    }
+
+    /*
+      ステージ2
+      3本の黒鍵。
+    */
+    .key-hint.stage2-hint1 {
+      left: 32%;
+      top: 18%;
+      width: 9.5%;
+      height: 43%;
+    }
+
+    .key-hint.stage2-hint2 {
+      left: 45.2%;
+      top: 18%;
+      width: 9.5%;
+      height: 43%;
+    }
+
+    .key-hint.stage2-hint3 {
+      left: 58.4%;
+      top: 18%;
+      width: 9.5%;
+      height: 43%;
+    }
+
+    /*
+      ドラッグ中に「ここですよ」と光っている状態
+    */
+    .key-hint.active {
+      opacity: 1;
+      transform: scale(1.04);
+
+      animation: keyHintGlow 0.9s infinite ease-in-out;
+    }
+
+    @keyframes keyHintGlow {
+      0%, 100% {
+        opacity: 0.55;
+        box-shadow:
+          0 0 8px rgba(250, 204, 21, 0.7),
+          0 0 18px rgba(250, 204, 21, 0.55),
+          0 0 28px rgba(250, 204, 21, 0.35);
+      }
+
+      50% {
+        opacity: 1;
+        box-shadow:
+          0 0 12px rgba(250, 204, 21, 0.95),
+          0 0 25px rgba(250, 204, 21, 0.8),
+          0 0 42px rgba(250, 204, 21, 0.6);
+      }
+    }
+
+
+    /* =========================================================
+       右エリア：ごほうびトレイ
        ========================================================= */
     .game-sidebar-right {
       width: 24%;
@@ -390,20 +459,13 @@
       width: 240px;
       height: 460px;
       background:
-        radial-gradient(
-          circle at 50% 20%,
-          rgba(255,255,255,0.98),
-          rgba(255,255,255,0.88)
-        ),
+        radial-gradient(circle at 50% 20%, rgba(255,255,255,0.98), rgba(255,255,255,0.88)),
         linear-gradient(135deg, #fff7ed, #fef3c7);
-
       border: 6px solid #f59e0b;
       border-radius: 50px;
-
       box-shadow:
         0 12px 30px rgba(0,0,0,0.12),
         0 0 0 8px rgba(251,191,36,0.12);
-
       padding: 20px;
       display: flex;
       flex-direction: column;
@@ -465,7 +527,6 @@
       position: relative;
       z-index: 2;
       text-shadow: 1px 1px 0 white;
-      flex-shrink: 0;
     }
 
     #tray-area {
@@ -501,36 +562,15 @@
       }
     }
 
-    /* =========================================================
-       7. ★ ピューッと飛んでいくアイテム
-       ========================================================= */
-    .flying-item {
-      position: fixed;
-      z-index: 200;
-      pointer-events: none;
-      object-fit: contain;
-      filter: drop-shadow(0 8px 18px rgba(0,0,0,0.25));
-      transition: none;
-      will-change: transform, opacity;
-    }
 
     /* =========================================================
-       8. 全クリア画面
+       4. 全クリア・ごほうび画面
        ========================================================= */
     #screen-reward {
       background:
-        radial-gradient(
-          circle at 20% 20%,
-          rgba(255,255,255,0.55),
-          transparent 25%
-        ),
-        radial-gradient(
-          circle at 80% 30%,
-          rgba(255,255,255,0.45),
-          transparent 25%
-        ),
+        radial-gradient(circle at 20% 20%, rgba(255,255,255,0.55), transparent 25%),
+        radial-gradient(circle at 80% 30%, rgba(255,255,255,0.45), transparent 25%),
         linear-gradient(135deg, #fef08a 0%, #f472b6 100%);
-
       text-align: center;
       z-index: 30;
     }
@@ -554,7 +594,6 @@
       box-shadow:
         0 18px 40px rgba(0,0,0,0.15),
         0 0 0 8px rgba(255,255,255,0.25);
-
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -655,17 +694,16 @@
       transform: scale(0.92);
     }
 
+
     /* =========================================================
-       9. iPhone 縦画面
+       5. iPhone（縦画面）最適化
        ========================================================= */
     @media (orientation: portrait) {
 
       #screen-game {
         flex-direction: column;
-        justify-content: flex-start;
-        padding: 0.5rem;
-        gap: 0.4rem;
-        overflow: hidden;
+        justify-content: space-around;
+        padding: 1rem;
       }
 
       .game-sidebar-left,
@@ -673,12 +711,6 @@
       .game-sidebar-right {
         width: 100%;
         height: auto;
-        flex-shrink: 0;
-      }
-
-      .game-sidebar-left {
-        height: 23vh;
-        min-height: 150px;
       }
 
       .source-box {
@@ -696,14 +728,9 @@
         height: 240px;
       }
 
-      .game-center {
-        height: 42vh;
-        min-height: 260px;
-      }
-
       #keyboard-wrapper {
         max-width: 100%;
-        height: 100%;
+        height: 310px;
       }
 
       .white-key {
@@ -728,43 +755,57 @@
         height: 130px;
       }
 
-      /* ★ iPhoneではお皿を下側にしっかり表示 */
-      .game-sidebar-right {
-        height: 27vh;
-        min-height: 125px;
-        justify-content: center;
+      /*
+        iPhone縦画面では、鍵盤画像に合わせて
+        黒鍵ヒントも小さくする。
+      */
+      .key-hint.stage1-hint1 {
+        left: 40%;
+        top: 18%;
+        width: 10%;
+        height: 43%;
+      }
+
+      .key-hint.stage1-hint2 {
+        left: 53%;
+        top: 18%;
+        width: 10%;
+        height: 43%;
+      }
+
+      .key-hint.stage2-hint1 {
+        left: 31%;
+        top: 18%;
+        width: 9%;
+        height: 43%;
+      }
+
+      .key-hint.stage2-hint2 {
+        left: 44%;
+        top: 18%;
+        width: 9%;
+        height: 43%;
+      }
+
+      .key-hint.stage2-hint3 {
+        left: 57%;
+        top: 18%;
+        width: 9%;
+        height: 43%;
       }
 
       .tray-container {
-        width: min(330px, 88vw);
-        height: 125px;
-        min-height: 125px;
+        width: 330px;
+        height: 130px;
         flex-direction: column;
-        padding: 8px 14px;
-        border-radius: 36px;
-      }
-
-      .tray-title {
-        font-size: 1.25rem;
-        margin-bottom: 2px;
       }
 
       #tray-area {
         flex-direction: row;
-        height: 82px;
-      }
-
-      .tray-item {
-        width: 72px;
-        height: 72px;
       }
 
       .tray-item-dango {
         transform: rotate(0deg) !important;
-      }
-
-      .reward-content {
-        padding: 2rem 1.5rem;
       }
     }
   </style>
@@ -772,27 +813,38 @@
 
 <body>
 
-  <!-- 最初に戻る -->
+  <!-- 右上固定コントロール -->
   <button id="btn-reset" title="最初に戻る">↻</button>
 
+
   <!-- =========================================================
-       スタート画面
+       1. トントン画面
        ========================================================= -->
   <section id="screen-start" class="screen active">
+
     <div class="start-card">
-      <div class="start-title">たのしい ピアノあそび</div>
+
+      <div class="start-title">
+        たのしい ピアノあそび
+      </div>
+
       <button id="btn-tonton" class="btn-tonton">
         トントン！
       </button>
+
     </div>
+
   </section>
 
+
   <!-- =========================================================
-       ゲーム画面
+       2. メインゲーム画面
        ========================================================= -->
   <section id="screen-game" class="screen">
 
+    <!-- 左：さくらんぼ／お団子 -->
     <div class="game-sidebar-left">
+
       <div class="source-box">
 
         <div id="draggable">
@@ -806,14 +858,45 @@
           </div>
 
         </div>
+
       </div>
+
     </div>
 
+
+    <!-- 中央：鍵盤 -->
     <div class="game-center">
-      <div id="keyboard-wrapper"></div>
+
+      <div id="keyboard-wrapper">
+
+        <!--
+          鍵盤本体。
+          背景画像が読み込まれた場合は透明になる。
+          実際の鍵盤画像は keyboard-wrapper の背景に表示。
+        -->
+        
+        <!-- ★ 黒鍵ヒント -->
+        <div class="key-hints" id="key-hints">
+
+          <!-- ステージ1 -->
+          <div class="key-hint stage1-hint1" id="stage1-hint1"></div>
+          <div class="key-hint stage1-hint2" id="stage1-hint2"></div>
+
+          <!-- ステージ2 -->
+          <div class="key-hint stage2-hint1" id="stage2-hint1"></div>
+          <div class="key-hint stage2-hint2" id="stage2-hint2"></div>
+          <div class="key-hint stage2-hint3" id="stage2-hint3"></div>
+
+        </div>
+
+      </div>
+
     </div>
 
+
+    <!-- 右：できたよ -->
     <div class="game-sidebar-right">
+
       <div class="tray-container">
 
         <div class="tray-title">
@@ -823,12 +906,14 @@
         <div id="tray-area"></div>
 
       </div>
+
     </div>
 
   </section>
 
+
   <!-- =========================================================
-       全クリア画面
+       3. 全クリア画面
        ========================================================= -->
   <section id="screen-reward" class="screen">
 
@@ -851,6 +936,7 @@
     </div>
 
   </section>
+
 
   <script>
 
@@ -914,8 +1000,17 @@
     let currentX = 0;
     let currentY = 0;
 
-    /* ★ 追加：近づいた時の音を連続で鳴らさないため */
-    let nearHitPlayed = false;
+    /*
+      現在どの黒鍵ヒントが光っているか。
+      -1 = どれも光っていない
+    */
+    let activeHintIndex = -1;
+
+    /*
+      同じ場所でピン音が連続して鳴らないようにする。
+    */
+    let hintSoundLocked = false;
+
 
     /* =========================================================
        DOM
@@ -956,6 +1051,19 @@
 
 
     /* =========================================================
+       黒鍵ヒントDOM
+       ========================================================= */
+
+    const keyHints = [
+      document.getElementById('stage1-hint1'),
+      document.getElementById('stage1-hint2'),
+      document.getElementById('stage2-hint1'),
+      document.getElementById('stage2-hint2'),
+      document.getElementById('stage2-hint3')
+    ];
+
+
+    /* =========================================================
        3. 音声再生
        ========================================================= */
 
@@ -967,17 +1075,22 @@
         "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==";
 
       audioPlayer.play().catch(() => {});
+
     }
 
 
     function playMp3(filename, onEndedCallback) {
 
       audioPlayer.pause();
+
       audioPlayer.currentTime = 0;
+
       audioPlayer.src = filename;
 
       let hasExecuted = false;
+
       let safeTimeoutId = null;
+
 
       const finishHandler = () => {
 
@@ -995,28 +1108,27 @@
           if (onEndedCallback) {
             onEndedCallback();
           }
+
         }
+
       };
+
 
       if (onEndedCallback) {
 
-        audioPlayer.onended =
-          finishHandler;
-
-        audioPlayer.onerror =
-          finishHandler;
+        audioPlayer.onended = finishHandler;
+        audioPlayer.onerror = finishHandler;
 
         safeTimeoutId =
-          setTimeout(
-            finishHandler,
-            6000
-          );
+          setTimeout(finishHandler, 6000);
 
       } else {
 
         audioPlayer.onended = null;
         audioPlayer.onerror = null;
+
       }
+
 
       audioPlayer.play().catch(err => {
 
@@ -1029,33 +1141,30 @@
         finishHandler();
 
       });
+
     }
 
 
     /* =========================================================
-       ★ 追加：近づいたときの「ピン♪」
-       Web Audio APIで短い音を作る
+       ★ 黒鍵ヒント用「ピン♪」
+       外部ファイルを使わず、小さな電子音を作る。
        ========================================================= */
 
     let hintAudioContext = null;
 
-    function playNearHintSound() {
+    function playHintSound() {
 
       try {
 
         if (!hintAudioContext) {
 
           hintAudioContext =
-            new (
-              window.AudioContext ||
-              window.webkitAudioContext
-            )();
+            new (window.AudioContext ||
+                 window.webkitAudioContext)();
+
         }
 
-        if (
-          hintAudioContext.state ===
-          "suspended"
-        ) {
+        if (hintAudioContext.state === "suspended") {
           hintAudioContext.resume();
         }
 
@@ -1074,7 +1183,7 @@
 
         oscillator.frequency.exponentialRampToValueAtTime(
           1320,
-          hintAudioContext.currentTime + 0.09
+          hintAudioContext.currentTime + 0.08
         );
 
         gain.gain.setValueAtTime(
@@ -1083,8 +1192,8 @@
         );
 
         gain.gain.exponentialRampToValueAtTime(
-          0.22,
-          hintAudioContext.currentTime + 0.01
+          0.12,
+          hintAudioContext.currentTime + 0.015
         );
 
         gain.gain.exponentialRampToValueAtTime(
@@ -1103,11 +1212,10 @@
 
       } catch (e) {
 
-        console.log(
-          "Hint sound unavailable",
-          e
-        );
+        console.log("Hint sound unavailable.", e);
+
       }
+
     }
 
 
@@ -1127,16 +1235,16 @@
 
       targetScreen.classList.add('active');
 
+
       if (targetScreen !== screenReward) {
-        btnReset.classList.remove(
-          'pika-pika'
-        );
+        btnReset.classList.remove('pika-pika');
       }
+
     }
 
 
     /* =========================================================
-       5. 画像読み込み
+       5. 画像自動探査読み込み
        ========================================================= */
 
     function loadImageWithFallback(
@@ -1151,9 +1259,9 @@
       imgElement.style.display = 'block';
 
       if (emojiFallback) {
-        emojiFallback.style.display =
-          'none';
+        emojiFallback.style.display = 'none';
       }
+
 
       imgElement.onerror = function() {
 
@@ -1166,31 +1274,33 @@
 
         } else {
 
-          imgElement.style.display =
-            'none';
+          imgElement.style.display = 'none';
 
           if (emojiFallback) {
 
-            emojiFallback.style.display =
-              'block';
+            emojiFallback.style.display = 'block';
 
             emojiFallback.textContent =
               fallbackEmoji;
+
           }
+
         }
+
       };
+
 
       imgElement.onload = function() {
 
         if (onSuccessCallback) {
-          onSuccessCallback(
-            imgElement.src
-          );
+          onSuccessCallback(imgElement.src);
         }
+
       };
 
-      imgElement.src =
-        candidates[0];
+
+      imgElement.src = candidates[0];
+
     }
 
 
@@ -1204,43 +1314,244 @@
         'has-custom-bg'
       );
 
+      keyboardWrapper.style.backgroundImage =
+        'none';
+
+
       function tryNext() {
 
         if (index >= candidates.length) {
 
-          keyboardWrapper.style
-            .backgroundImage = 'none';
+          keyboardWrapper.style.backgroundImage =
+            'none';
 
           return;
+
         }
+
 
         const img = new Image();
 
         const testUrl =
           candidates[index];
 
+
         img.onload = function() {
 
-          keyboardWrapper.style
-            .backgroundImage =
+          keyboardWrapper.style.backgroundImage =
             `url('${testUrl}')`;
 
           keyboardWrapper.classList.add(
             'has-custom-bg'
           );
+
         };
+
 
         img.onerror = function() {
 
           index++;
 
           tryNext();
+
         };
 
+
         img.src = testUrl;
+
       }
 
+
       tryNext();
+
+    }
+
+
+    /* =========================================================
+       ★ 黒鍵ヒントを全部消す
+       ========================================================= */
+
+    function clearKeyHints() {
+
+      keyHints.forEach(hint => {
+
+        if (hint) {
+          hint.classList.remove('active');
+        }
+
+      });
+
+      activeHintIndex = -1;
+      hintSoundLocked = false;
+
+    }
+
+
+    /* =========================================================
+       ★ 現在のステージに合わせて
+         黒鍵ヒントを表示する
+       ========================================================= */
+
+    function showHint(index) {
+
+      clearKeyHints();
+
+      if (currentStage === 1) {
+
+        if (index === 0) {
+          keyHints[0].classList.add('active');
+          activeHintIndex = 0;
+        }
+
+        if (index === 1) {
+          keyHints[1].classList.add('active');
+          activeHintIndex = 1;
+        }
+
+      } else {
+
+        if (index === 0) {
+          keyHints[2].classList.add('active');
+          activeHintIndex = 2;
+        }
+
+        if (index === 1) {
+          keyHints[3].classList.add('active');
+          activeHintIndex = 3;
+        }
+
+        if (index === 2) {
+          keyHints[4].classList.add('active');
+          activeHintIndex = 4;
+        }
+
+      }
+
+    }
+
+
+    /* =========================================================
+       ★ ドラッグ中の位置から
+         「どの黒鍵の近くにいるか」を調べる
+       ========================================================= */
+
+    function updateKeyHint() {
+
+      if (!isDragging) {
+        clearKeyHints();
+        return;
+      }
+
+
+      const targetArea =
+        document.getElementById('target-area');
+
+      if (!targetArea) {
+        clearKeyHints();
+        return;
+      }
+
+
+      const itemRect =
+        draggable.getBoundingClientRect();
+
+
+      const itemCenterX =
+        itemRect.left +
+        itemRect.width / 2;
+
+      const itemCenterY =
+        itemRect.top +
+        itemRect.height / 2;
+
+
+      const targetRect =
+        targetArea.getBoundingClientRect();
+
+
+      /*
+        判定エリアを黒鍵ごとに分割する。
+
+        画面に見せるヒントは細い黒鍵。
+        ただし実際の判定は少し広め。
+      */
+
+      const count =
+        currentStage === 1 ? 2 : 3;
+
+      const gap =
+        currentStage === 1 ? 22 : 22;
+
+      const totalWidth =
+        targetRect.width;
+
+      const keyWidth =
+        (totalWidth - gap * (count - 1))
+        / count;
+
+
+      let foundIndex = -1;
+
+
+      for (let i = 0; i < count; i++) {
+
+        const keyLeft =
+          targetRect.left +
+          i * (keyWidth + gap);
+
+        const keyRight =
+          keyLeft + keyWidth;
+
+
+        /*
+          黒鍵の周囲を少し広めにする。
+
+          2歳半くらいでも
+          「だいたいここ」で反応するようにする。
+        */
+        const marginX = 35;
+        const marginY = 35;
+
+
+        const insideX =
+          itemCenterX >= keyLeft - marginX &&
+          itemCenterX <= keyRight + marginX;
+
+
+        const insideY =
+          itemCenterY >= targetRect.top - marginY &&
+          itemCenterY <= targetRect.bottom + marginY;
+
+
+        if (insideX && insideY) {
+
+          foundIndex = i;
+          break;
+
+        }
+
+      }
+
+
+      if (foundIndex !== -1) {
+
+        if (activeHintIndex !==
+            (currentStage === 1
+              ? foundIndex
+              : foundIndex + 2)) {
+
+          showHint(foundIndex);
+
+          playHintSound();
+
+        }
+
+      } else {
+
+        clearKeyHints();
+
+      }
+
     }
 
 
@@ -1251,13 +1562,17 @@
     function startStage(stageNum) {
 
       currentStage = stageNum;
+
       successCount = 0;
+
       isLocked = false;
-      nearHitPlayed = false;
+
+      clearKeyHints();
 
       trayArea.innerHTML = '';
 
       resetDraggablePosition();
+
 
       if (stageNum === 1) {
 
@@ -1269,9 +1584,11 @@
           'is-dango'
         );
 
+
         setKeyboardBackgroundWithFallback(
           FILES_STAGE1_BG
         );
+
 
         loadImageWithFallback(
           itemImg,
@@ -1282,7 +1599,38 @@
           }
         );
 
+
         keyboardWrapper.innerHTML = `
+
+          <div class="key-hints" id="key-hints">
+
+            <div
+              class="key-hint stage1-hint1"
+              id="stage1-hint1">
+            </div>
+
+            <div
+              class="key-hint stage1-hint2"
+              id="stage1-hint2">
+            </div>
+
+            <div
+              class="key-hint stage2-hint1"
+              id="stage2-hint1">
+            </div>
+
+            <div
+              class="key-hint stage2-hint2"
+              id="stage2-hint2">
+            </div>
+
+            <div
+              class="key-hint stage2-hint3"
+              id="stage2-hint3">
+            </div>
+
+          </div>
+
 
           <div class="piano-keyboard">
 
@@ -1292,8 +1640,7 @@
 
             <div
               class="black-keys-target stage1-target"
-              id="target-area"
-            >
+              id="target-area">
 
               <div class="black-key"></div>
               <div class="black-key"></div>
@@ -1304,7 +1651,16 @@
 
         `;
 
+
+        /*
+          innerHTMLで作り直したので、
+          ヒントDOMを再取得する。
+        */
+        refreshHintReferences();
+
+
         showScreen(screenGame);
+
 
       } else if (stageNum === 2) {
 
@@ -1316,9 +1672,11 @@
           'is-dango'
         );
 
+
         setKeyboardBackgroundWithFallback(
           FILES_STAGE2_BG
         );
+
 
         loadImageWithFallback(
           itemImg,
@@ -1329,7 +1687,38 @@
           }
         );
 
+
         keyboardWrapper.innerHTML = `
+
+          <div class="key-hints" id="key-hints">
+
+            <div
+              class="key-hint stage1-hint1"
+              id="stage1-hint1">
+            </div>
+
+            <div
+              class="key-hint stage1-hint2"
+              id="stage1-hint2">
+            </div>
+
+            <div
+              class="key-hint stage2-hint1"
+              id="stage2-hint1">
+            </div>
+
+            <div
+              class="key-hint stage2-hint2"
+              id="stage2-hint2">
+            </div>
+
+            <div
+              class="key-hint stage2-hint3"
+              id="stage2-hint3">
+            </div>
+
+          </div>
+
 
           <div class="piano-keyboard">
 
@@ -1340,8 +1729,7 @@
 
             <div
               class="black-keys-target stage2-target"
-              id="target-area"
-            >
+              id="target-area">
 
               <div class="black-key"></div>
               <div class="black-key"></div>
@@ -1353,179 +1741,62 @@
 
         `;
 
+
+        refreshHintReferences();
+
+
         showScreen(screenGame);
 
         playMp3("start2.mp3");
+
       }
+
     }
 
 
     /* =========================================================
-       ★ 7. お皿へ「ピューッ」と飛ばす
+       ★ ステージ切り替え後の
+         ヒントDOM再取得
        ========================================================= */
 
-    function flyItemToTray() {
+    function refreshHintReferences() {
 
-      const sourceRect =
-        draggable.getBoundingClientRect();
+      keyHints.length = 0;
 
-      const trayRect =
-        document.querySelector(
-          '.tray-container'
-        ).getBoundingClientRect();
-
-      const flying =
-        document.createElement('img');
-
-      if (currentStage === 1) {
-
-        flying.src =
-          loadedPathSakuranbo ||
-          itemImg.src;
-
-      } else {
-
-        flying.src =
-          loadedPathKushidango ||
-          itemImg.src;
-      }
-
-      flying.className =
-        'flying-item';
-
-      /* 元の大きさ */
-      const startSize =
-        Math.min(
-          sourceRect.width,
-          sourceRect.height
-        );
-
-      /* お皿に入る大きさ */
-      const endSize =
-        currentStage === 1
-          ? 72
-          : 72;
-
-      flying.style.width =
-        startSize + 'px';
-
-      flying.style.height =
-        startSize + 'px';
-
-      flying.style.left =
-        sourceRect.left + 'px';
-
-      flying.style.top =
-        sourceRect.top + 'px';
-
-      document.body.appendChild(
-        flying
+      keyHints.push(
+        document.getElementById('stage1-hint1')
       );
 
-      /* お皿の中の到着位置 */
-      const targetX =
-        trayRect.left +
-        trayRect.width / 2 -
-        endSize / 2;
-
-      const targetY =
-        trayRect.top +
-        trayRect.height / 2 -
-        endSize / 2;
-
-      /*
-       * 少し弧を描くように、
-       * 中間地点を一度作る
-       */
-      const startLeft =
-        sourceRect.left;
-
-      const startTop =
-        sourceRect.top;
-
-      const deltaX =
-        targetX - startLeft;
-
-      const deltaY =
-        targetY - startTop;
-
-      /* ★ 実際にピューッと飛ぶ */
-      flying.animate(
-        [
-          {
-            transform:
-              'translate3d(0, 0, 0) scale(1) rotate(0deg)',
-            opacity: 1
-          },
-
-          {
-            transform:
-              `translate3d(
-                ${deltaX * 0.45}px,
-                ${deltaY * 0.45 - 80}px,
-                0
-              )
-              scale(0.82)
-              rotate(12deg)`,
-            opacity: 1
-          },
-
-          {
-            transform:
-              `translate3d(
-                ${deltaX}px,
-                ${deltaY}px,
-                0
-              )
-              scale(${endSize / startSize})
-              rotate(0deg)`,
-            opacity: 1
-          }
-        ],
-        {
-          duration: 620,
-          easing:
-            'cubic-bezier(0.22, 0.75, 0.25, 1)',
-          fill: 'forwards'
-        }
+      keyHints.push(
+        document.getElementById('stage1-hint2')
       );
 
-      /* 元のアイテムは一時的に見えなくする */
-      itemImg.style.visibility =
-        'hidden';
+      keyHints.push(
+        document.getElementById('stage2-hint1')
+      );
 
-      if (emojiFallback) {
-        emojiFallback.style.visibility =
-          'hidden';
-      }
+      keyHints.push(
+        document.getElementById('stage2-hint2')
+      );
 
-      /* 飛び終わったらお皿へ登録 */
-      setTimeout(() => {
+      keyHints.push(
+        document.getElementById('stage2-hint3')
+      );
 
-        flying.remove();
+      activeHintIndex = -1;
 
-        itemImg.style.visibility =
-          'visible';
-
-        if (emojiFallback) {
-          emojiFallback.style.visibility =
-            'visible';
-        }
-
-        addItemToTray();
-
-      }, 650);
     }
 
 
     /* =========================================================
-       8. お皿にごほうび追加
+       7. お皿にごほうび追加
        ========================================================= */
 
     function addItemToTray() {
 
       const trayImg =
         document.createElement('img');
+
 
       if (currentStage === 1) {
 
@@ -1536,6 +1807,7 @@
           loadedPathSakuranbo ||
           itemImg.src;
 
+
       } else {
 
         trayImg.className =
@@ -1544,16 +1816,17 @@
         trayImg.src =
           loadedPathKushidango ||
           itemImg.src;
+
       }
 
-      trayArea.appendChild(
-        trayImg
-      );
+
+      trayArea.appendChild(trayImg);
+
     }
 
 
     /* =========================================================
-       9. 座標取得
+       8. ドラッグ位置取得
        ========================================================= */
 
     function getEventPos(e) {
@@ -1564,98 +1837,35 @@
       ) {
 
         return {
+
           x: e.touches[0].clientX,
+
           y: e.touches[0].clientY
+
         };
+
       }
+
 
       return {
+
         x: e.clientX,
+
         y: e.clientY
+
       };
+
     }
 
 
     /* =========================================================
-       ★ 10. 黒鍵に近づいたか確認
-       ========================================================= */
-
-    function checkNearHit() {
-
-      if (!isDragging) return;
-
-      const targetArea =
-        document.getElementById(
-          'target-area'
-        );
-
-      if (!targetArea) return;
-
-      const itemRect =
-        draggable.getBoundingClientRect();
-
-      const targetRect =
-        targetArea.getBoundingClientRect();
-
-      const itemCenterX =
-        itemRect.left +
-        itemRect.width / 2;
-
-      const itemCenterY =
-        itemRect.top +
-        itemRect.height / 2;
-
-      /*
-       * 実際の正解範囲より少し広めに
-       * 「近づいた」と判断する
-       */
-      const HINT_MARGIN_X = 65;
-      const HINT_MARGIN_Y = 55;
-
-      const isNear =
-        itemCenterX >=
-          targetRect.left - HINT_MARGIN_X &&
-
-        itemCenterX <=
-          targetRect.right + HINT_MARGIN_X &&
-
-        itemCenterY >=
-          targetRect.top - HINT_MARGIN_Y &&
-
-        itemCenterY <=
-          targetRect.bottom + HINT_MARGIN_Y;
-
-      if (isNear) {
-
-        targetArea.classList.add(
-          'near-hit'
-        );
-
-        if (!nearHitPlayed) {
-
-          nearHitPlayed = true;
-
-          playNearHintSound();
-        }
-
-      } else {
-
-        targetArea.classList.remove(
-          'near-hit'
-        );
-
-        nearHitPlayed = false;
-      }
-    }
-
-
-    /* =========================================================
-       11. ドラッグ開始
+       9. ドラッグ開始
        ========================================================= */
 
     function handleDragStart(e) {
 
       unlockAudioIOS();
+
 
       if (
         isDragging ||
@@ -1664,27 +1874,17 @@
         return;
       }
 
+
       isDragging = true;
-
-      nearHitPlayed = false;
-
-      const targetArea =
-        document.getElementById(
-          'target-area'
-        );
-
-      if (targetArea) {
-        targetArea.classList.remove(
-          'near-hit'
-        );
-      }
 
       draggable.classList.remove(
         'snap-back'
       );
 
+
       const pos =
         getEventPos(e);
+
 
       startX =
         pos.x - currentX;
@@ -1692,14 +1892,19 @@
       startY =
         pos.y - currentY;
 
+
+      clearKeyHints();
+
+
       if (e.cancelable) {
         e.preventDefault();
       }
+
     }
 
 
     /* =========================================================
-       12. ドラッグ中
+       10. ドラッグ中
        ========================================================= */
 
     function handleDragMove(e) {
@@ -1708,18 +1913,22 @@
         return;
       }
 
+
       if (e.cancelable) {
         e.preventDefault();
       }
 
+
       const pos =
         getEventPos(e);
+
 
       currentX =
         pos.x - startX;
 
       currentY =
         pos.y - startY;
+
 
       draggable.style.transform =
         `translate3d(
@@ -1728,13 +1937,18 @@
           0px
         )`;
 
-      /* ★ 近づいたか確認 */
-      checkNearHit();
+
+      /*
+        ★ ドラッグ中に
+        黒鍵の近くへ来たか確認。
+      */
+      updateKeyHint();
+
     }
 
 
     /* =========================================================
-       13. ドラッグ終了
+       11. ドラッグ終了
        ========================================================= */
 
     function handleDragEnd() {
@@ -1743,102 +1957,107 @@
         return;
       }
 
+
       isDragging = false;
+
+      clearKeyHints();
+
 
       const targetArea =
         document.getElementById(
           'target-area'
         );
 
+
       if (!targetArea) {
         return;
       }
 
-      /* ★ 光を消す */
-      targetArea.classList.remove(
-        'near-hit'
-      );
-
-      nearHitPlayed = false;
 
       const itemRect =
         draggable.getBoundingClientRect();
 
+
       const targetRect =
         targetArea.getBoundingClientRect();
+
 
       const itemCenterX =
         itemRect.left +
         itemRect.width / 2;
 
+
       const itemCenterY =
         itemRect.top +
         itemRect.height / 2;
 
+
       const MARGIN_X = 22;
+
       const MARGIN_Y_TOP = 12;
+
       const MARGIN_Y_BOTTOM = -10;
 
+
       const isHit =
+
         itemCenterX >=
-          targetRect.left - MARGIN_X &&
+        (targetRect.left - MARGIN_X)
+
+        &&
 
         itemCenterX <=
-          targetRect.right + MARGIN_X &&
+        (targetRect.right + MARGIN_X)
+
+        &&
 
         itemCenterY >=
-          targetRect.top - MARGIN_Y_TOP &&
+        (targetRect.top - MARGIN_Y_TOP)
+
+        &&
 
         itemCenterY <=
-          targetRect.bottom + MARGIN_Y_BOTTOM;
+        (targetRect.bottom + MARGIN_Y_BOTTOM);
 
-
-      /* =====================================================
-         正解
-         ===================================================== */
 
       if (isHit) {
 
+        /* 正解 */
+
         successCount++;
 
-        /*
-         * ★ ここではすぐにお皿へ追加せず、
-         *    「ピューッ」と飛ばす
-         */
-        flyItemToTray();
 
-        /*
-         * ★ 飛んでいる間に操作されないようロック
-         */
-        isLocked = true;
+        addItemToTray();
+
+
+        resetDraggablePosition();
+
 
         if (successCount === 1) {
 
-          playMp3(
-            "success1.mp3",
-            () => {
-              isLocked = false;
-            }
-          );
+          playMp3("success1.mp3");
+
 
         } else if (successCount === 2) {
 
-          playMp3(
-            "success2.mp3",
-            () => {
-              isLocked = false;
-            }
-          );
+          playMp3("success2.mp3");
+
 
         } else if (successCount >= 3) {
+
+          /*
+            3つ成功した瞬間に操作をガード
+          */
+
+          isLocked = true;
+
 
           if (currentStage === 1) {
 
             /*
-             * 3つ目のさくらんぼ
-             * 飛んでいったあと、
-             * 3ko.mp3 → ステージ2
-             */
+              さくらんぼ3つ目
+            */
+
             playMp3(
               "3ko.mp3",
               () => {
@@ -1846,14 +2065,13 @@
               }
             );
 
+
           } else if (currentStage === 2) {
 
             /*
-             * 3つ目のお団子
-             * clear2.mp3 → くす玉
-             * → ファンファーレ
-             * → retry.mp3
-             */
+              お団子3つ目
+            */
+
             playMp3(
               "clear2.mp3",
               () => {
@@ -1870,33 +2088,39 @@
 
                   }
                 );
+
               }
             );
+
           }
+
         }
 
 
       } else {
 
-        /* =================================================
-           不正解
-           ================================================= */
+        /* 不正解 */
 
         draggable.classList.add(
           'snap-back'
         );
 
+
         currentX = 0;
+
         currentY = 0;
+
 
         draggable.style.transform =
           'translate3d(0px, 0px, 0px)';
+
       }
+
     }
 
 
     /* =========================================================
-       14. ドラッグ位置リセット
+       12. ドラッグ位置リセット
        ========================================================= */
 
     function resetDraggablePosition() {
@@ -1905,24 +2129,23 @@
         'snap-back'
       );
 
+
       currentX = 0;
+
       currentY = 0;
+
 
       draggable.style.transform =
         'translate3d(0px, 0px, 0px)';
 
-      itemImg.style.visibility =
-        'visible';
 
-      if (emojiFallback) {
-        emojiFallback.style.visibility =
-          'visible';
-      }
+      clearKeyHints();
+
     }
 
 
     /* =========================================================
-       15. タッチ・マウスイベント
+       13. イベント登録
        ========================================================= */
 
     draggable.addEventListener(
@@ -1931,11 +2154,13 @@
       { passive: false }
     );
 
+
     window.addEventListener(
       'touchmove',
       handleDragMove,
       { passive: false }
     );
+
 
     window.addEventListener(
       'touchend',
@@ -1943,15 +2168,18 @@
       { passive: false }
     );
 
+
     draggable.addEventListener(
       'mousedown',
       handleDragStart
     );
 
+
     window.addEventListener(
       'mousemove',
       handleDragMove
     );
+
 
     window.addEventListener(
       'mouseup',
@@ -1960,7 +2188,7 @@
 
 
     /* =========================================================
-       16. くす玉・紙吹雪
+       14. くす玉・紙吹雪
        ========================================================= */
 
     const canvas =
@@ -1971,7 +2199,9 @@
     const ctx =
       canvas.getContext('2d');
 
+
     let particles = [];
+
     let animationId = null;
 
 
@@ -1984,6 +2214,7 @@
       );
 
       startConfetti();
+
     }
 
 
@@ -1994,6 +2225,7 @@
 
       canvas.height =
         window.innerHeight;
+
     }
 
 
@@ -2009,6 +2241,7 @@
 
       particles = [];
 
+
       const colors = [
         '#f43f5e',
         '#0ea5e9',
@@ -2017,6 +2250,7 @@
         '#a855f7',
         '#ec4899'
       ];
+
 
       for (
         let i = 0;
@@ -2032,12 +2266,12 @@
 
           y:
             Math.random() *
-              canvas.height -
+            canvas.height -
             canvas.height,
 
           size:
             Math.random() *
-              14 +
+            14 +
             6,
 
           color:
@@ -2050,12 +2284,12 @@
 
           vy:
             Math.random() *
-              3 +
+            3 +
             2,
 
           vx:
             Math.random() *
-              2 -
+            2 -
             1,
 
           rotation:
@@ -2064,13 +2298,16 @@
 
           rotSpeed:
             Math.random() *
-              4 -
+            4 -
             2
 
         });
+
       }
 
+
       renderConfetti();
+
     }
 
 
@@ -2083,13 +2320,17 @@
         canvas.height
       );
 
+
       particles.forEach(
         (p) => {
 
           p.y += p.vy;
+
           p.x += p.vx;
+
           p.rotation +=
             p.rotSpeed;
+
 
           if (
             p.y >
@@ -2101,23 +2342,29 @@
             p.x =
               Math.random() *
               canvas.width;
+
           }
 
+
           ctx.save();
+
 
           ctx.translate(
             p.x,
             p.y
           );
 
+
           ctx.rotate(
             (p.rotation *
               Math.PI) /
-              180
+            180
           );
+
 
           ctx.fillStyle =
             p.color;
+
 
           ctx.fillRect(
             -p.size / 2,
@@ -2126,14 +2373,18 @@
             p.size
           );
 
+
           ctx.restore();
+
         }
       );
+
 
       animationId =
         requestAnimationFrame(
           renderConfetti
         );
+
     }
 
 
@@ -2146,13 +2397,20 @@
         );
 
         animationId = null;
+
       }
+
     }
 
 
     /* =========================================================
-       17. スタート
+       15. リセット＆再プレイ
        ========================================================= */
+
+    /*
+      トントンを押したら、
+      先にゲーム画面へ切り替えてからstart1.mp3
+    */
 
     btnTonton.addEventListener(
       'click',
@@ -2165,6 +2423,7 @@
         playMp3(
           "start1.mp3"
         );
+
       }
     );
 
@@ -2174,8 +2433,7 @@
       (e) => {
 
         if (
-          e.target ===
-          screenStart
+          e.target === screenStart
         ) {
 
           unlockAudioIOS();
@@ -2185,14 +2443,12 @@
           playMp3(
             "start1.mp3"
           );
+
         }
+
       }
     );
 
-
-    /* =========================================================
-       18. リセット
-       ========================================================= */
 
     btnReset.addEventListener(
       'click',
@@ -2204,16 +2460,15 @@
 
         stopConfetti();
 
+        clearKeyHints();
+
         showScreen(
           screenStart
         );
+
       }
     );
 
-
-    /* =========================================================
-       19. もう一度あそぶ
-       ========================================================= */
 
     btnReplay.addEventListener(
       'click',
@@ -2225,9 +2480,12 @@
 
         stopConfetti();
 
+        clearKeyHints();
+
         showScreen(
           screenStart
         );
+
       }
     );
 
