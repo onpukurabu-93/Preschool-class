@@ -427,6 +427,17 @@
     }
 
     /* =========================================================
+       お皿へピューッと飛んでいく演出
+       ========================================================= */
+    .flying-item {
+      animation: none !important;
+      margin: 0 !important;
+      object-fit: contain;
+      filter: drop-shadow(0 8px 14px rgba(0,0,0,0.22));
+      pointer-events: none;
+    }
+
+    /* =========================================================
        4. 全クリア・ごほうび画面
        ========================================================= */
     #screen-reward {
@@ -871,19 +882,67 @@
       }
     }
 
-    /* お皿にごほうび追加 */
+    /* =========================================================
+       お皿へピューッと飛ばす
+       ========================================================= */
     function addItemToTray() {
-      const trayImg = document.createElement('img');
+      const flyItem = document.createElement('img');
 
       if (currentStage === 1) {
-        trayImg.className = 'tray-item';
-        trayImg.src = loadedPathSakuranbo || itemImg.src;
+        flyItem.src = loadedPathSakuranbo || itemImg.src;
+        flyItem.className = 'tray-item flying-item';
       } else {
-        trayImg.className = 'tray-item tray-item-dango';
-        trayImg.src = loadedPathKushidango || itemImg.src;
+        flyItem.src = loadedPathKushidango || itemImg.src;
+        flyItem.className = 'tray-item tray-item-dango flying-item';
       }
 
-      trayArea.appendChild(trayImg);
+      const startRect = draggable.getBoundingClientRect();
+      const trayRect = trayArea.getBoundingClientRect();
+
+      const startX = startRect.left + startRect.width / 2;
+      const startY = startRect.top + startRect.height / 2;
+
+      const endX = trayRect.left + trayRect.width / 2;
+      const endY = trayRect.top + trayRect.height / 2;
+
+      flyItem.style.position = 'fixed';
+      flyItem.style.left = `${startX}px`;
+      flyItem.style.top = `${startY}px`;
+      flyItem.style.width = `${Math.min(startRect.width, 110)}px`;
+      flyItem.style.height = `${Math.min(startRect.height, 110)}px`;
+      flyItem.style.transform = 'translate(-50%, -50%) scale(1)';
+      flyItem.style.zIndex = '200';
+      flyItem.style.pointerEvents = 'none';
+
+      document.body.appendChild(flyItem);
+
+      requestAnimationFrame(() => {
+        flyItem.style.transition =
+          'left 0.55s cubic-bezier(0.22, 0.61, 0.36, 1), ' +
+          'top 0.55s cubic-bezier(0.22, 0.61, 0.36, 1), ' +
+          'transform 0.55s cubic-bezier(0.22, 0.61, 0.36, 1)';
+
+        flyItem.style.left = `${endX}px`;
+        flyItem.style.top = `${endY}px`;
+        flyItem.style.transform =
+          'translate(-50%, -50%) scale(0.45) rotate(15deg)';
+      });
+
+      setTimeout(() => {
+        flyItem.remove();
+
+        const trayItem = document.createElement('img');
+
+        if (currentStage === 1) {
+          trayItem.className = 'tray-item';
+          trayItem.src = loadedPathSakuranbo || itemImg.src;
+        } else {
+          trayItem.className = 'tray-item tray-item-dango';
+          trayItem.src = loadedPathKushidango || itemImg.src;
+        }
+
+        trayArea.appendChild(trayItem);
+      }, 580);
     }
 
     /* 7. ドラッグ＆ドロップ ＆ 判定ロジック */
@@ -958,7 +1017,10 @@
         /* 正解！ */
         successCount++;
         addItemToTray();
-        resetDraggablePosition();
+
+        setTimeout(() => {
+          resetDraggablePosition();
+        }, 580);
 
         if (successCount === 1) {
           playMp3("success1.mp3");
