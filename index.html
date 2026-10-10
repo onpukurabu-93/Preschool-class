@@ -28,6 +28,7 @@
       display: none;
       width: 100vw;
       height: 100vh;
+      height: 100dvh;
       position: absolute;
       top: 0;
       left: 0;
@@ -131,6 +132,7 @@
       padding: 0 0.5rem;
       width: 100vw;
       height: 100vh;
+      height: 100dvh;
     }
 
     #screen-game.active { display: flex; }
@@ -456,12 +458,16 @@
       -webkit-user-select: text;
     }
 
-    /* ===== iPhone 縦 ===== */
+    /* ===== iPhone 縦 =====
+       縦向きは、画面を上から「左の箱 → 鍵盤 → お皿」の3段に分ける。
+       合計が画面の高さに収まるように、高さを割り当てる。 */
     @media (orientation: portrait) {
       #screen-game {
         flex-direction: column;
-        justify-content: space-around;
-        padding: 1rem;
+        justify-content: flex-start;
+        align-items: center;
+        padding: calc(env(safe-area-inset-top, 0px) + 6px) 8px calc(env(safe-area-inset-bottom, 0px) + 6px);
+        gap: 6px;
       }
 
       .game-sidebar-left,
@@ -469,20 +475,58 @@
       .game-sidebar-right {
         width: 100%;
         height: auto;
+        min-height: 0;
       }
+
+      .game-sidebar-left { flex: 0 0 auto; }
+
+      .game-center {
+        flex: 1 1 0;
+        min-height: 0;
+      }
+
+      .game-sidebar-right { flex: 0 0 auto; }
 
       #keyboard-wrapper {
         max-width: 100%;
-        height: 310px;
+        height: 100%;
+        min-height: 120px;
       }
 
+      /* お皿は、横長の帯にして、画面の下に収める */
       .tray-container {
-        width: 330px;
-        height: 130px;
-        flex-direction: column;
+        width: 100%;
+        max-width: 420px;
+        height: 100px;
+        flex-direction: row;
+        padding: 6px 12px 6px 60px;
+        border-radius: 34px;
+        border-width: 5px;
       }
 
-      #tray-area { flex-direction: row; }
+      .tray-title {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 0.9rem;
+        margin: 0;
+        width: 44px;
+        line-height: 1.2;
+        text-align: center;
+      }
+
+      .tray-container::before { top: 4px; left: 6px; font-size: 14px; }
+      .tray-container::after { bottom: 4px; right: 8px; font-size: 16px; }
+
+      #tray-area {
+        flex-direction: row;
+        justify-content: space-around;
+        align-items: center;
+        height: 100%;
+      }
+
+      .tray-item { max-height: 84px; }
     }
   </style>
 </head>
@@ -639,8 +683,13 @@
     const audioPlayer = new Audio();
 
     function unlockAudioIOS() {
-      audioPlayer.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==";
-      audioPlayer.play().catch(() => {});
+      /* mp3 用の音声タグを目覚めさせる */
+      try {
+        audioPlayer.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==";
+        audioPlayer.play().catch(() => {});
+      } catch (e) {}
+      /* ピンポン用の音の機能も、同時に目覚めさせる */
+      wakeAudioContext();
     }
 
     function playMp3(filename, onEndedCallback) {
@@ -679,16 +728,66 @@
 
     /* =========================================================
        5. ピンポン音
+       ---------------------------------------------------------
+       iPhone は、画面を触った瞬間に音の機能を目覚めさせないと、
+       あとから鳴らしても音が出ません。
+       「トントン！」「もう一度あそぶ」「絵に触れた」ときに目覚めさせます。
+       また、消音スイッチがオンでも鳴りやすいように、
+       聞こえない無音の音声を流しておきます。
        ========================================================= */
 
     let audioContext = null;
+    let silentEl = null;
 
-    function playPing() {
+    function makeSilentWavUrl() {
+      const rate = 8000, n = 800;
+      const buf = new ArrayBuffer(44 + n);
+      const v = new DataView(buf);
+      function w(o, t) { for (let i = 0; i < t.length; i++) v.setUint8(o + i, t.charCodeAt(i)); }
+      w(0, "RIFF"); v.setUint32(4, 36 + n, true); w(8, "WAVE"); w(12, "fmt ");
+      v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+      v.setUint32(24, rate, true); v.setUint32(28, rate, true);
+      v.setUint16(32, 1, true); v.setUint16(34, 8, true);
+      w(36, "data"); v.setUint32(40, n, true);
+      for (let i = 0; i < n; i++) v.setUint8(44 + i, 128);
+      return URL.createObjectURL(new Blob([buf], { type: "audio/wav" }));
+    }
+
+    function wakeAudioContext() {
+      try {
+        if (!silentEl) {
+          silentEl = document.createElement("audio");
+          silentEl.setAttribute("playsinline", "");
+          silentEl.loop = true;
+          silentEl.volume = 0.01;
+          silentEl.src = makeSilentWavUrl();
+        }
+        if (silentEl.paused) {
+          const p = silentEl.play();
+          if (p && p.catch) p.catch(() => {});
+        }
+      } catch (e) {}
+
       try {
         if (!audioContext) {
           audioContext = new (window.AudioContext || window.webkitAudioContext)();
         }
-        if (audioContext.state === "suspended") audioContext.resume();
+        if (audioContext.state !== "running") {
+          const r = audioContext.resume();
+          if (r && r.catch) r.catch(() => {});
+        }
+        /* 無音の短い音を1回鳴らして、確実に目覚めさせる */
+        const b = audioContext.createBuffer(1, 1, 22050);
+        const s = audioContext.createBufferSource();
+        s.buffer = b;
+        s.connect(audioContext.destination);
+        s.start(0);
+      } catch (e) {}
+    }
+
+    function playPing() {
+      try {
+        wakeAudioContext();
 
         const now = audioContext.currentTime;
         const oscillator = audioContext.createOscillator();
@@ -711,6 +810,13 @@
         console.log("ping sound error", e);
       }
     }
+
+    /* 指を離したときにも、目覚めさせておく */
+    ["touchend", "pointerup", "click"].forEach(ev => {
+      document.addEventListener(ev, () => {
+        try { if (audioContext && audioContext.state !== "running") audioContext.resume(); } catch (e) {}
+      }, true);
+    });
 
 
     /* =========================================================
@@ -943,6 +1049,10 @@
       return box;
     }
 
+    function isPortrait() {
+      return window.matchMedia("(orientation: portrait)").matches;
+    }
+
     /* ねらいの枠・動かす絵・左の箱の大きさをそろえる */
     function layoutStage() {
       const A = assets[currentStage];
@@ -1032,7 +1142,7 @@
       draggable.style.width = z.w + "px";
       draggable.style.height = z.h + "px";
 
-      /* 左の点線の箱 */
+      /* 左（縦向きでは上）の点線の箱 */
       const colW = sourceBox.parentElement.clientWidth || 300;
       const boxW = Math.min(Math.max(bw + 40, z.w + 40, 160), Math.max(colW - 16, 160));
       const boxH = Math.max(bh + 40, z.h + 40, 140);
@@ -1045,8 +1155,21 @@
       updateAdjustText();
     }
 
+    /* 縦向きで、3段の合計が画面に収まるように、鍵盤の高さを決めて、もう一度並べる */
+    function fitPortrait() {
+      if (!isPortrait()) return;
+      /* 鍵盤は残りの高さを使う（CSSの flex で決まる）。
+         左の箱とお皿の高さを合わせたあと、もう一度並べ直す */
+      layoutStage();
+    }
+
     window.addEventListener("resize", () => {
-      if (screenGame.classList.contains("active")) layoutStage();
+      if (screenGame.classList.contains("active")) { layoutStage(); }
+    });
+    window.addEventListener("orientationchange", () => {
+      setTimeout(() => {
+        if (screenGame.classList.contains("active")) { layoutStage(); }
+      }, 300);
     });
 
 
@@ -1076,9 +1199,24 @@
         const A = assets[stageNum];
         if (A.kb) keyboardWrapper.style.backgroundImage = "url('" + A.kb.url + "')";
         layoutStage();
+        /* 画面の大きさが落ち着いてから、もう一度並べる */
+        requestAnimationFrame(() => {
+          if (token === stageToken) layoutStage();
+        });
       });
 
       if (stageNum === 2) playMp3("start2.mp3");
+    }
+
+    /* 「もう一度あそぶ」「↻」：トントン画面を飛ばして、すぐ1面から始める */
+    function restartGame() {
+      isLocked = false;
+      stageToken++;
+      audioPlayer.pause();
+      stopConfetti();
+      unlockAudioIOS();
+      startStage(1);
+      playMp3("start1.mp3");
     }
 
 
@@ -1087,9 +1225,14 @@
        ========================================================= */
 
     function getTrayWidth() {
-      const portrait = window.matchMedia("(orientation: portrait)").matches;
-      if (currentStage === 1) return portrait ? 80 : 120;
-      return portrait ? 85 : 150;
+      if (isPortrait()) {
+        /* 縦向き：お皿は横長の帯。3つ並ぶ幅と、帯の高さに収める */
+        const area = trayArea.clientWidth || 300;
+        const byWidth = (area / 3) - 10;
+        return Math.max(40, Math.min(currentStage === 1 ? 70 : 90, byWidth));
+      }
+      if (currentStage === 1) return 120;
+      return 150;
     }
 
     function flyToTray(onComplete) {
@@ -1138,10 +1281,16 @@
        ========================================================= */
 
     function addItemToTray() {
-      const tw = getTrayWidth();
+      let tw = getTrayWidth();
       let el;
 
       if (L) {
+        /* 縦向きでは、帯の高さ（約84px）にも収める */
+        if (isPortrait()) {
+          const maxH = 80;
+          const hAtTw = L.bh * (tw / Math.max(1, L.bw));
+          if (hAtTw > maxH) tw = tw * (maxH / hAtTw);
+        }
         const k = tw / Math.max(1, L.bw);
         el = makeArt(L.url, L.info, L.s * k, L.rot, "body", L.bw * k, L.bh * k, false);
       } else {
@@ -1216,8 +1365,9 @@
 
       const rect = targetZone.getBoundingClientRect();
 
-      pingMessage.style.left = (rect.left + rect.width / 2 - 65) + "px";
-      pingMessage.style.top = (rect.top - 55) + "px";
+      const left = rect.left + rect.width / 2 - 65;
+      pingMessage.style.left = Math.max(4, Math.min(left, window.innerWidth - 150)) + "px";
+      pingMessage.style.top = Math.max(4, rect.top - 55) + "px";
 
       void pingMessage.offsetWidth;
       pingMessage.classList.add("show");
@@ -1229,6 +1379,7 @@
        ========================================================= */
 
     function handleDragStart(e) {
+      /* 触れた瞬間に、音の機能を目覚めさせる（ピンポンが最初から鳴るように） */
       unlockAudioIOS();
 
       if (isDragging || isLocked) return;
@@ -1417,7 +1568,7 @@
 
 
     /* =========================================================
-       19. スタート
+       19. スタート（最初にアプリを開いたときだけ「トントン！」画面）
        ========================================================= */
 
     btnTonton.addEventListener("click", () => {
@@ -1436,24 +1587,11 @@
 
 
     /* =========================================================
-       20. リセット・もう一度
+       20. リセット・もう一度（トントン画面を飛ばして、すぐ1面から）
        ========================================================= */
 
-    btnReset.addEventListener("click", () => {
-      isLocked = false;
-      stageToken++;
-      audioPlayer.pause();
-      stopConfetti();
-      showScreen(screenStart);
-    });
-
-    btnReplay.addEventListener("click", () => {
-      isLocked = false;
-      stageToken++;
-      audioPlayer.pause();
-      stopConfetti();
-      showScreen(screenStart);
-    });
+    btnReset.addEventListener("click", restartGame);
+    btnReplay.addEventListener("click", restartGame);
 
 
     /* =========================================================
