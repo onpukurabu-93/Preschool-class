@@ -40,6 +40,15 @@
 
     .screen.active { display: flex; }
 
+    /* ===== 音声の表記 ===== */
+    .credit {
+      pointer-events: none;
+      font-size: 12px;
+      color: #a8814a;
+      margin-top: 16px;
+      text-align: center;
+    }
+
     /* ===== リセット ===== */
     #btn-reset {
       position: fixed;
@@ -525,6 +534,7 @@
       <div class="start-title">たのしい ピアノあそび</div>
       <button id="btn-tonton" class="btn-tonton">トントン！</button>
     </div>
+    <div class="credit">音声：VOICEVOX:ずんだもん</div>
   </section>
 
   <!-- ゲーム -->
@@ -569,6 +579,7 @@
       <div class="reward-title">ぜんぶ クリア！</div>
       <button id="btn-replay" class="btn-replay">もう一度あそぶ</button>
     </div>
+    <div class="credit" style="position:relative;z-index:32;">音声：VOICEVOX:ずんだもん</div>
   </section>
 
   <script>
@@ -595,6 +606,9 @@
 
     /* ピンポンの「もう一度鳴れる」までの離れ具合（ぴったりの広さの何倍） */
     const RELEASE_RATIO = 1.35;
+
+    /* 声の保険時間（ミリ秒）。声が終わった合図が来なかったときだけ、この時間で次へ進む */
+    const VOICE_SAFETY_MS = 30000;
 
     const ADJUST = new URLSearchParams(location.search).get("adjust") === "1";
 
@@ -661,51 +675,89 @@
 
 
     /* =========================================================
-       4. 音声
+       4. 声（mp3）
+       ---------------------------------------------------------
+       ・しゃべっている声は、最後まで流します。
+         次の声は「順番待ち」になって、前の声が終わってから鳴ります。
+       ・「もう一度あそぶ」「↻」を押したときは、順番待ちを全部消します。
+         古い声（もう一度遊ぶならピカピカボタン…など）は鳴りません。
+       ・音声タグの目覚ましは、最初の1回だけ。
+         しゃべっている途中で、無音の音を入れて声を止めることはしません。
        ========================================================= */
 
     const audioPlayer = new Audio();
 
+    let audioUnlocked = false;
+    let seqToken = 0;
+    let voiceQueue = [];
+    let voiceBusy = false;
+    let voiceTimer = null;
+
+    /* 触れたときの目覚まし */
     function unlockAudioIOS() {
-      /* mp3 用の音声タグを目覚めさせる */
-      try {
-        audioPlayer.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==";
-        audioPlayer.play().catch(() => {});
-      } catch (e) {}
-      /* ピンポン用の音の機能も、同時に目覚めさせる */
+      if (!audioUnlocked) {
+        audioUnlocked = true;
+        try {
+          audioPlayer.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==";
+          audioPlayer.play().catch(() => {});
+        } catch (e) {}
+      }
+      /* ピンポン用の音の機能は、いつでも目覚めさせてよい（声には触らない） */
       wakeAudioContext();
     }
 
+    /* 声の順番待ちを全部消して、いまの声も止める */
+    function cancelVoices() {
+      seqToken++;
+      voiceQueue = [];
+      voiceBusy = false;
+      if (voiceTimer) { clearTimeout(voiceTimer); voiceTimer = null; }
+      audioPlayer.onended = null;
+      audioPlayer.onerror = null;
+      try { audioPlayer.pause(); } catch (e) {}
+    }
+
+    /* 声を鳴らす。しゃべっている声があれば、終わってから鳴る */
     function playMp3(filename, onEndedCallback) {
-      audioPlayer.pause();
-      audioPlayer.currentTime = 0;
-      audioPlayer.src = filename;
+      voiceQueue.push({ file: filename, cb: onEndedCallback || null, token: seqToken });
+      if (!voiceBusy) playNextVoice();
+    }
 
-      let hasExecuted = false;
-      let safeTimeoutId = null;
+    function playNextVoice() {
+      const item = voiceQueue.shift();
+      if (!item) { voiceBusy = false; return; }
 
-      const finishHandler = () => {
-        if (!hasExecuted) {
-          hasExecuted = true;
-          if (safeTimeoutId) clearTimeout(safeTimeoutId);
-          audioPlayer.onended = null;
-          audioPlayer.onerror = null;
-          if (onEndedCallback) onEndedCallback();
-        }
-      };
+      voiceBusy = true;
+      let finished = false;
 
-      if (onEndedCallback) {
-        audioPlayer.onended = finishHandler;
-        audioPlayer.onerror = finishHandler;
-        safeTimeoutId = setTimeout(finishHandler, 6000);
-      } else {
+      const finish = () => {
+        if (finished) return;
+        finished = true;
+
+        /* 取り消された声は、何もしない（あとから来た声の状態を壊さない） */
+        if (item.token !== seqToken) return;
+
+        if (voiceTimer) { clearTimeout(voiceTimer); voiceTimer = null; }
         audioPlayer.onended = null;
         audioPlayer.onerror = null;
-      }
+        voiceBusy = false;
+
+        if (item.cb) item.cb();
+        if (!voiceBusy) playNextVoice();
+      };
+
+      try { audioPlayer.pause(); } catch (e) {}
+      try { audioPlayer.currentTime = 0; } catch (e) {}
+      audioPlayer.src = item.file;
+      audioPlayer.onended = finish;
+      audioPlayer.onerror = finish;
+
+      if (voiceTimer) clearTimeout(voiceTimer);
+      voiceTimer = setTimeout(finish, VOICE_SAFETY_MS);
 
       audioPlayer.play().catch(err => {
-        console.log("Audio play failed:", filename, err);
-        finishHandler();
+        console.log("Audio play failed:", item.file, err);
+        finish();
       });
     }
 
@@ -715,7 +767,6 @@
        ---------------------------------------------------------
        iPhone は、画面を触った瞬間に音の機能を目覚めさせないと、
        あとから鳴らしても音が出ません。
-       「トントン！」「もう一度あそぶ」「絵に触れた」ときに目覚めさせます。
        また、消音スイッチがオンでも鳴りやすいように、
        聞こえない無音の音声を流しておきます。
        ========================================================= */
@@ -1184,11 +1235,11 @@
       if (stageNum === 2) playMp3("start2.mp3");
     }
 
-    /* 「もう一度あそぶ」「↻」：トントン画面を飛ばして、すぐ1面から始める */
+    /* 「もう一度あそぶ」「↻」：古い声を全部消して、トントン画面を飛ばして、すぐ1面から始める */
     function restartGame() {
       isLocked = false;
       stageToken++;
-      audioPlayer.pause();
+      cancelVoices();
       stopConfetti();
       unlockAudioIOS();
       startStage(1);
@@ -1355,8 +1406,9 @@
        ========================================================= */
 
     function handleDragStart(e) {
-      /* 触れた瞬間に、音の機能を目覚めさせる（ピンポンが最初から鳴るように） */
-      unlockAudioIOS();
+      /* 触れた瞬間に、ピンポン用の音の機能を目覚めさせる。
+         声の再生部分には触らないので、しゃべっている声は止まらない */
+      wakeAudioContext();
 
       if (isDragging || isLocked) return;
 
@@ -1547,18 +1599,17 @@
        19. スタート（最初にアプリを開いたときだけ「トントン！」画面）
        ========================================================= */
 
-    btnTonton.addEventListener("click", () => {
+    function firstStart() {
+      cancelVoices();
       unlockAudioIOS();
       startStage(1);
       playMp3("start1.mp3");
-    });
+    }
+
+    btnTonton.addEventListener("click", firstStart);
 
     screenStart.addEventListener("click", e => {
-      if (e.target === screenStart) {
-        unlockAudioIOS();
-        startStage(1);
-        playMp3("start1.mp3");
-      }
+      if (e.target === screenStart) firstStart();
     });
 
 
@@ -1647,8 +1698,8 @@
         });
       }
 
-      document.getElementById("adj-s1").addEventListener("click", () => startStage(1));
-      document.getElementById("adj-s2").addEventListener("click", () => startStage(2));
+      document.getElementById("adj-s1").addEventListener("click", () => { cancelVoices(); startStage(1); });
+      document.getElementById("adj-s2").addEventListener("click", () => { cancelVoices(); startStage(2); });
 
       document.getElementById("adj-rot").addEventListener("click", () => {
         STAGE[currentStage].rot = (lastRot + 90) % 360;
