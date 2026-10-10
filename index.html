@@ -19,11 +19,7 @@
       width: 100%;
       height: 100%;
       overflow: hidden;
-      font-family:
-        'Hiragino Maru Gothic ProN',
-        'Rounded Mplus 1c',
-        'Meiryo',
-        sans-serif;
+      font-family: 'Hiragino Maru Gothic ProN', 'Rounded Mplus 1c', 'Meiryo', sans-serif;
       background: linear-gradient(135deg, #e0f2fe 0%, #fef3c7 100%);
       color: #334155;
     }
@@ -41,14 +37,9 @@
       z-index: 1;
     }
 
-    .screen.active {
-      display: flex;
-    }
+    .screen.active { display: flex; }
 
-    /* =========================================================
-       リセット
-       ========================================================= */
-
+    /* ===== リセット ===== */
     #btn-reset {
       position: fixed;
       top: 12px;
@@ -77,25 +68,15 @@
     @keyframes pikaPikaGlow {
       0%, 100% {
         transform: scale(1);
-        box-shadow:
-          0 0 12px #ef4444,
-          0 0 25px #f59e0b,
-          0 0 35px #fef08a;
+        box-shadow: 0 0 12px #ef4444, 0 0 25px #f59e0b, 0 0 35px #fef08a;
       }
-
       50% {
         transform: scale(1.18);
-        box-shadow:
-          0 0 30px #f43f5e,
-          0 0 50px #fbbf24,
-          0 0 70px #ffffff;
+        box-shadow: 0 0 30px #f43f5e, 0 0 50px #fbbf24, 0 0 70px #ffffff;
       }
     }
 
-    /* =========================================================
-       スタート
-       ========================================================= */
-
+    /* ===== スタート ===== */
     #screen-start {
       background: linear-gradient(135deg, #ffedd5 0%, #fef08a 100%);
       cursor: pointer;
@@ -141,10 +122,7 @@
       50% { transform: scale(1.06); }
     }
 
-    /* =========================================================
-       ゲーム画面
-       ========================================================= */
-
+    /* ===== ゲーム画面 ===== */
     #screen-game {
       display: none;
       flex-direction: row;
@@ -155,12 +133,10 @@
       height: 100vh;
     }
 
-    #screen-game.active {
-      display: flex;
-    }
+    #screen-game.active { display: flex; }
 
     .game-sidebar-left {
-      width: 28%;
+      width: 31%;
       height: 100%;
       display: flex;
       flex-direction: column;
@@ -169,72 +145,53 @@
       z-index: 10;
     }
 
+    /* 左の点線の箱。大きさは JavaScript が決める */
     .source-box {
-      width: 380px;
-      height: 380px;
+      width: 300px;
+      height: 200px;
       background: rgba(255,255,255,0.82);
       border: 5px dashed #38bdf8;
       border-radius: 44px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
       position: relative;
     }
 
+    /* 動かす絵。大きさは JavaScript が鍵盤の絵に合わせて決める */
     #draggable {
-      width: 290px;
-      height: 290px;
+      width: 200px;
+      height: 120px;
       cursor: grab;
       touch-action: none;
       position: absolute;
+      left: 0;
+      top: 0;
       z-index: 50;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    #draggable.stage2-size {
-      width: 380px;
-      height: 380px;
     }
 
     #draggable.snap-back {
-      transition:
-        transform 0.28s cubic-bezier(0.175,0.885,0.32,1.275);
+      transition: transform 0.28s cubic-bezier(0.175,0.885,0.32,1.275);
     }
 
-    #image-container {
+    #art-slot {
+      position: absolute;
+      left: 0;
+      top: 0;
       width: 100%;
       height: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    #item-img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      pointer-events: none;
-      filter: drop-shadow(0 8px 18px rgba(0,0,0,0.25));
     }
 
     .emoji-fallback {
-      font-size: 130px;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 110px;
       line-height: 1;
       display: none;
     }
 
-    .is-dango {
-      transform: rotate(0deg) !important;
-    }
-
-    /* =========================================================
-       中央・鍵盤
-       ========================================================= */
-
+    /* ===== 中央・鍵盤 ===== */
     .game-center {
-      width: 48%;
+      width: 46%;
       height: 100%;
       display: flex;
       justify-content: center;
@@ -249,243 +206,23 @@
       background-size: contain;
       background-position: center;
       background-repeat: no-repeat;
-      display: flex;
-      justify-content: center;
-      align-items: flex-end;
-      padding-bottom: 10px;
     }
 
-    /*
-     * 元の鍵盤画像を使うときは、
-     * HTMLの鍵盤そのものは見せない。
-     * これで鍵盤画像を二重に描かない。
-     */
-
-    .piano-keyboard {
-      display: flex;
-      position: relative;
-      background: #1e293b;
-      padding: 14px;
-      border-radius: 28px;
-      box-shadow: 0 20px 45px rgba(0,0,0,0.28);
-    }
-
-    #keyboard-wrapper.has-custom-bg .piano-keyboard {
-      opacity: 0;
+    /* 見えない「ねらいの枠」。ふだんは何も見えない */
+    #target-zone {
+      position: absolute;
       pointer-events: none;
+      z-index: 5;
     }
 
-    .white-key {
-      width: 130px;
-      height: 420px;
-      background: white;
-      border: 4px solid #cbd5e1;
-      border-radius: 0 0 18px 18px;
-      margin: 0 5px;
+    #target-zone.adjust-on {
+      border: 3px dashed #ef4444;
+      background: rgba(239,68,68,0.12);
     }
 
-    .black-keys-target {
-      position: absolute;
-      top: 14px;
-      display: flex;
-      gap: 22px;
-      padding: 0;
-      background: transparent !important;
-      border: none !important;
-      box-shadow: none !important;
-      outline: none !important;
-      z-index: 2;
-    }
-
-    .stage1-target {
-      left: 155px;
-      width: 190px;
-      height: 250px;
-    }
-
-    .stage2-target {
-      left: 280px;
-      width: 320px;
-      height: 250px;
-    }
-
-    .black-key {
-      width: 82px;
-      height: 250px;
-      background: #0f172a;
-      border-radius: 0 0 12px 12px;
-    }
-
-    #keyboard-wrapper.has-custom-bg .black-key {
-      opacity: 0;
-    }
-
-    /*
-     * =========================================================
-     * 黒鍵の「ここですよ」ガイド
-     * =========================================================
-     *
-     * 鍵盤全体を覆わず、
-     * 黒鍵2本・3本の位置だけに光を出す。
-     */
-
-    .target-guide {
-      position: absolute;
-      z-index: 8;
-      pointer-events: none;
-      opacity: 0.9;
-      transition:
-        transform 0.15s ease,
-        opacity 0.15s ease;
-    }
-
-    .target-guide.near {
-      opacity: 1;
-      transform: scale(1.08);
-    }
-
-    .target-guide::after {
-      content: "";
-      position: absolute;
-      inset: -18px;
-      border-radius: 50%;
-      background: radial-gradient(
-        circle,
-        rgba(255,214,0,0.48) 0%,
-        rgba(255,214,0,0.25) 48%,
-        rgba(255,214,0,0) 72%
-      );
-      filter: blur(5px);
-      animation: guideGlow 1.15s infinite ease-in-out;
-      z-index: -1;
-    }
-
-    @keyframes guideGlow {
-      0%,100% {
-        opacity: 0.65;
-        transform: scale(0.92);
-      }
-
-      50% {
-        opacity: 1;
-        transform: scale(1.08);
-      }
-    }
-
-    /*
-     * さくらんぼ
-     * 2つの実を、黒鍵2本の位置に置く。
-     */
-
-    .cherry-guide {
-      width: 178px;
-      height: 105px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 5px;
-    }
-
-    .cherry-guide .guide-fruit {
-      width: 82px;
-      height: 82px;
-      border-radius: 50%;
-      background:
-        radial-gradient(
-          circle at 35% 30%,
-          rgba(255,255,255,0.75) 0 8%,
-          transparent 9%
-        ),
-        radial-gradient(
-          circle at 50% 55%,
-          #fff36b 0%,
-          #ffd000 52%,
-          #f5ad00 100%
-        );
-      box-shadow:
-        0 0 10px rgba(255,214,0,0.8),
-        0 0 25px rgba(255,214,0,0.6);
-      position: relative;
-    }
-
-    .cherry-guide .guide-fruit::before {
-      content: "";
-      position: absolute;
-      width: 42px;
-      height: 24px;
-      border-top: 7px solid rgba(255,190,0,0.95);
-      border-radius: 50%;
-      top: -10px;
-      left: 25px;
-      transform: rotate(-20deg);
-    }
-
-    /*
-     * 串だんご
-     * 3つの丸を黒鍵3本の位置に合わせる。
-     */
-
-    .dango-guide {
-      width: 285px;
-      height: 105px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 3px;
-    }
-
-    .dango-guide .guide-dango {
-      width: 84px;
-      height: 84px;
-      border-radius: 50%;
-      background:
-        radial-gradient(
-          circle at 35% 28%,
-          rgba(255,255,255,0.8) 0 8%,
-          transparent 9%
-        ),
-        radial-gradient(
-          circle,
-          #fff36b 0%,
-          #ffd000 55%,
-          #f4aa00 100%
-        );
-      box-shadow:
-        0 0 10px rgba(255,214,0,0.8),
-        0 0 25px rgba(255,214,0,0.6);
-      position: relative;
-    }
-
-    .dango-guide .guide-stick {
-      position: absolute;
-      width: 255px;
-      height: 9px;
-      background: #d18a36;
-      border-radius: 10px;
-      z-index: -1;
-      left: 15px;
-    }
-
-    /*
-     * 黒鍵の中心付近にガイドを置く
-     */
-
-    .stage1-guide-position {
-      left: 155px;
-      top: 155px;
-    }
-
-    .stage2-guide-position {
-      left: 300px;
-      top: 155px;
-    }
-
-    /* =========================================================
-       ピンポン表示
-       ========================================================= */
-
+    /* ===== ピンポン表示 ===== */
     .ping-message {
-      position: absolute;
+      position: fixed;
       z-index: 70;
       pointer-events: none;
       font-size: 2rem;
@@ -500,38 +237,18 @@
       white-space: nowrap;
     }
 
-    .ping-message.show {
-      animation: pingShow 0.7s ease-out forwards;
-    }
+    .ping-message.show { animation: pingShow 0.7s ease-out forwards; }
 
     @keyframes pingShow {
-      0% {
-        opacity: 0;
-        transform: scale(0.7) translateY(10px);
-      }
-
-      25% {
-        opacity: 1;
-        transform: scale(1.12) translateY(-5px);
-      }
-
-      65% {
-        opacity: 1;
-        transform: scale(1) translateY(-12px);
-      }
-
-      100% {
-        opacity: 0;
-        transform: scale(0.95) translateY(-28px);
-      }
+      0%   { opacity: 0; transform: scale(0.7) translateY(10px); }
+      25%  { opacity: 1; transform: scale(1.12) translateY(-5px); }
+      65%  { opacity: 1; transform: scale(1) translateY(-12px); }
+      100% { opacity: 0; transform: scale(0.95) translateY(-28px); }
     }
 
-    /* =========================================================
-       ごほうびトレイ
-       ========================================================= */
-
+    /* ===== ごほうびトレイ ===== */
     .game-sidebar-right {
-      width: 24%;
+      width: 23%;
       height: 100%;
       display: flex;
       flex-direction: column;
@@ -543,17 +260,11 @@
       width: 240px;
       height: 460px;
       background:
-        radial-gradient(
-          circle at 50% 20%,
-          rgba(255,255,255,0.98),
-          rgba(255,255,255,0.88)
-        ),
+        radial-gradient(circle at 50% 20%, rgba(255,255,255,0.98), rgba(255,255,255,0.88)),
         linear-gradient(135deg,#fff7ed,#fef3c7);
       border: 6px solid #f59e0b;
       border-radius: 50px;
-      box-shadow:
-        0 12px 30px rgba(0,0,0,0.12),
-        0 0 0 8px rgba(251,191,36,0.12);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.12), 0 0 0 8px rgba(251,191,36,0.12);
       padding: 20px;
       display: flex;
       flex-direction: column;
@@ -585,15 +296,8 @@
     }
 
     @keyframes trayStar {
-      0%,100% {
-        transform: scale(1) rotate(-10deg);
-        opacity: 0.55;
-      }
-
-      50% {
-        transform: scale(1.25) rotate(10deg);
-        opacity: 1;
-      }
+      0%,100% { transform: scale(1) rotate(-10deg); opacity: 0.55; }
+      50%     { transform: scale(1.25) rotate(10deg); opacity: 1; }
     }
 
     .tray-title {
@@ -617,78 +321,36 @@
     }
 
     .tray-item {
-      width: 110px;
-      height: 110px;
-      object-fit: contain;
+      position: relative;
+      flex: 0 0 auto;
       filter: drop-shadow(0 6px 8px rgba(0,0,0,0.18));
     }
 
-    .tray-item-dango {
-      transform: rotate(0deg) !important;
-    }
-
-    /*
-     * お皿に入った後のポップ
-     */
-
-    .tray-item.pop-in {
-      animation:
-        trayPop 0.45s
-        cubic-bezier(0.175,0.885,0.32,1.275);
-    }
+    .tray-item.pop-in { animation: trayPop 0.45s cubic-bezier(0.175,0.885,0.32,1.275); }
 
     @keyframes trayPop {
-      0% {
-        transform: scale(0.1);
-        opacity: 0;
-      }
-
-      70% {
-        transform: scale(1.12);
-        opacity: 1;
-      }
-
-      100% {
-        transform: scale(1);
-        opacity: 1;
-      }
+      0%   { transform: scale(0.1); opacity: 0; }
+      70%  { transform: scale(1.12); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
     }
 
-    /*
-     * ピューッと飛んでいくコピー
-     */
-
+    /* ピューッと飛んでいくコピー */
     .flying-item {
       position: fixed;
       z-index: 90;
       pointer-events: none;
-      object-fit: contain;
-      filter: drop-shadow(0 8px 18px rgba(0,0,0,0.25));
       transition:
         left 0.55s cubic-bezier(0.4,0,0.2,1),
         top 0.55s cubic-bezier(0.4,0,0.2,1),
-        width 0.55s cubic-bezier(0.4,0,0.2,1),
-        height 0.55s cubic-bezier(0.4,0,0.2,1),
         transform 0.55s cubic-bezier(0.4,0,0.2,1),
         opacity 0.55s ease;
     }
 
-    /* =========================================================
-       全クリア
-       ========================================================= */
-
+    /* ===== 全クリア ===== */
     #screen-reward {
       background:
-        radial-gradient(
-          circle at 20% 20%,
-          rgba(255,255,255,0.55),
-          transparent 25%
-        ),
-        radial-gradient(
-          circle at 80% 30%,
-          rgba(255,255,255,0.45),
-          transparent 25%
-        ),
+        radial-gradient(circle at 20% 20%, rgba(255,255,255,0.55), transparent 25%),
+        radial-gradient(circle at 80% 30%, rgba(255,255,255,0.45), transparent 25%),
         linear-gradient(135deg,#fef08a 0%,#f472b6 100%);
       text-align: center;
       z-index: 30;
@@ -710,9 +372,7 @@
       background: rgba(255,255,255,0.95);
       padding: 3rem 4rem;
       border-radius: 48px;
-      box-shadow:
-        0 18px 40px rgba(0,0,0,0.15),
-        0 0 0 8px rgba(255,255,255,0.25);
+      box-shadow: 0 18px 40px rgba(0,0,0,0.15), 0 0 0 8px rgba(255,255,255,0.25);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -733,7 +393,7 @@
     }
 
     @keyframes bounce {
-      0% { transform: translateY(0); }
+      0%   { transform: translateY(0); }
       100% { transform: translateY(-20px); }
     }
 
@@ -752,21 +412,52 @@
     }
 
     @keyframes replayPika {
-      0%,100% {
-        transform: scale(1);
-      }
-
-      50% {
-        transform: scale(1.08);
-      }
+      0%,100% { transform: scale(1); }
+      50%     { transform: scale(1.08); }
     }
 
-    /* =========================================================
-       iPhone 縦
-       ========================================================= */
+    /* ===== 調整パネル（?adjust=1 のときだけ出る） ===== */
+    #adjust-panel {
+      position: fixed;
+      left: 50%;
+      bottom: 6px;
+      transform: translateX(-50%);
+      z-index: 200;
+      background: rgba(30,20,10,0.88);
+      color: #fff;
+      padding: 8px 10px;
+      border-radius: 14px;
+      font-size: 12px;
+      max-width: 96vw;
+      text-align: center;
+    }
 
+    #adjust-panel .row { margin: 4px 0; }
+
+    #adjust-panel button {
+      font-size: 14px;
+      font-weight: bold;
+      padding: 8px 12px;
+      margin: 2px;
+      border: none;
+      border-radius: 10px;
+      background: #fbbf24;
+      color: #3b2a14;
+      cursor: pointer;
+    }
+
+    #adj-text {
+      font-size: 12px;
+      line-height: 1.5;
+      background: rgba(255,255,255,0.12);
+      border-radius: 8px;
+      padding: 4px 6px;
+      user-select: text;
+      -webkit-user-select: text;
+    }
+
+    /* ===== iPhone 縦 ===== */
     @media (orientation: portrait) {
-
       #screen-game {
         flex-direction: column;
         justify-content: space-around;
@@ -780,21 +471,6 @@
         height: auto;
       }
 
-      .source-box {
-        width: 220px;
-        height: 220px;
-      }
-
-      #draggable {
-        width: 120px;
-        height: 120px;
-      }
-
-      #draggable.stage2-size {
-        width: 240px;
-        height: 240px;
-      }
-
       #keyboard-wrapper {
         max-width: 100%;
         height: 310px;
@@ -806,47 +482,7 @@
         flex-direction: column;
       }
 
-      #tray-area {
-        flex-direction: row;
-      }
-
-      .stage1-guide-position {
-        left: 86px;
-        top: 95px;
-      }
-
-      .stage2-guide-position {
-        left: 150px;
-        top: 95px;
-      }
-
-      .cherry-guide {
-        width: 108px;
-        height: 65px;
-        gap: 2px;
-      }
-
-      .cherry-guide .guide-fruit {
-        width: 50px;
-        height: 50px;
-      }
-
-      .dango-guide {
-        width: 170px;
-        height: 65px;
-        gap: 2px;
-      }
-
-      .dango-guide .guide-dango {
-        width: 50px;
-        height: 50px;
-      }
-
-      .dango-guide .guide-stick {
-        width: 155px;
-        height: 6px;
-        left: 8px;
-      }
+      #tray-area { flex-direction: row; }
     }
   </style>
 </head>
@@ -855,173 +491,93 @@
 
   <button id="btn-reset" title="最初に戻る">↻</button>
 
-  <!-- =========================================================
-       スタート
-       ========================================================= -->
-
+  <!-- スタート -->
   <section id="screen-start" class="screen active">
     <div class="start-card">
       <div class="start-title">たのしい ピアノあそび</div>
-      <button id="btn-tonton" class="btn-tonton">
-        トントン！
-      </button>
+      <button id="btn-tonton" class="btn-tonton">トントン！</button>
     </div>
   </section>
 
-  <!-- =========================================================
-       ゲーム
-       ========================================================= -->
-
+  <!-- ゲーム -->
   <section id="screen-game" class="screen">
 
-    <!-- 左：アイテム -->
+    <!-- 左：動かす絵 -->
     <div class="game-sidebar-left">
-
-      <div class="source-box">
-
+      <div class="source-box" id="source-box">
         <div id="draggable">
-
-          <div id="image-container">
-            <img id="item-img" src="" alt="アイテム">
-          </div>
-
-          <div id="emoji-fallback" class="emoji-fallback">
-            🍒
-          </div>
-
+          <div id="art-slot"></div>
+          <div id="emoji-fallback" class="emoji-fallback">🍒</div>
         </div>
-
       </div>
-
     </div>
-
 
     <!-- 中央：鍵盤 -->
     <div class="game-center">
-
       <div id="keyboard-wrapper">
-
-        <!-- ここに元の鍵盤画像 -->
-
-        <!-- さくらんぼ用ガイド -->
-        <div
-          id="cherry-guide"
-          class="target-guide cherry-guide stage1-guide-position"
-        >
-          <div class="guide-fruit"></div>
-          <div class="guide-fruit"></div>
-        </div>
-
-
-        <!-- だんご用ガイド -->
-        <div
-          id="dango-guide"
-          class="target-guide dango-guide stage2-guide-position"
-          style="display:none;"
-        >
-          <div class="guide-stick"></div>
-          <div class="guide-dango"></div>
-          <div class="guide-dango"></div>
-          <div class="guide-dango"></div>
-        </div>
-
-
-        <!-- ピンポン表示 -->
-        <div id="ping-message" class="ping-message">
-          ピンポン♪
-        </div>
-
+        <!-- 見えない「ねらいの枠」 -->
+        <div id="target-zone"></div>
       </div>
-
     </div>
-
 
     <!-- 右：できたよ -->
     <div class="game-sidebar-right">
-
       <div class="tray-container">
-
-        <div class="tray-title">
-          できたよ！
-        </div>
-
+        <div class="tray-title">できたよ！</div>
         <div id="tray-area"></div>
-
       </div>
-
     </div>
 
   </section>
 
+  <!-- ピンポン表示 -->
+  <div id="ping-message" class="ping-message">ピンポン♪</div>
 
-  <!-- =========================================================
-       全クリア
-       ========================================================= -->
-
+  <!-- 全クリア -->
   <section id="screen-reward" class="screen">
-
     <canvas id="confetti-canvas"></canvas>
-
     <div class="reward-content">
-
-      <div class="reward-emoji">
-        🎊
-      </div>
-
-      <div class="reward-title">
-        ぜんぶ クリア！
-      </div>
-
-      <button id="btn-replay" class="btn-replay">
-        もう一度あそぶ
-      </button>
-
+      <div class="reward-emoji">🎊</div>
+      <div class="reward-title">ぜんぶ クリア！</div>
+      <button id="btn-replay" class="btn-replay">もう一度あそぶ</button>
     </div>
-
   </section>
-
 
   <script>
+
+    /* =========================================================
+       0. 設定
+       ---------------------------------------------------------
+       ふだんは「auto:true」。アプリが鍵盤の絵を読んで、
+       さくらんぼ・団子の場所と大きさを自動で見つけます。
+       見つけられなかったときだけ、下の x, y, w, h（鍵盤の絵全体を 1 としたとき）を使います。
+       scale … 動かす絵の大きさ（1 = 鍵盤の絵と同じ）
+       rot   … 絵の向き（0 / 90 / 180 / 270。null = 自動）
+       ========================================================= */
+
+    const STAGE = {
+      1: { auto: true, x: 0.30,  y: 0.16,  w: 0.39,  h: 0.38,  scale: 1.0, rot: null },
+      2: { auto: true, x: 0.184, y: 0.224, w: 0.639, h: 0.236, scale: 1.0, rot: null }
+    };
+
+    /* 乗ったと判定する広さ（ねらいの枠の大きさに対する割合） */
+    const HIT_X = 0.40;
+    const HIT_Y = 0.70;
+    /* 近づいたとき「ピンポン♪」を出す広さ */
+    const NEAR_X = 0.55;
+    const NEAR_Y = 0.90;
+
+    const ADJUST = new URLSearchParams(location.search).get("adjust") === "1";
+
 
     /* =========================================================
        1. ファイル
        ========================================================= */
 
-    const FILES_STAGE1_BG = [
-      "kenban1.png",
-      "Kenban1.png",
-      "kenban1.PNG",
-      "Kenban1.PNG",
-      "KENBAN1.PNG",
-      "kenban1.jpg"
-    ];
-
-    const FILES_STAGE2_BG = [
-      "kenban2.png",
-      "Kenban2.png",
-      "kenban2.PNG",
-      "Kenban2.PNG",
-      "KENBAN2.PNG",
-      "kenban2.jpg"
-    ];
-
-    const FILES_SAKURANBO = [
-      "sakuranbo.png",
-      "Sakuranbo.png",
-      "sakuranbo.PNG",
-      "Sakuranbo.PNG",
-      "SAKURANBO.PNG",
-      "sakuranbo.jpg"
-    ];
-
-    const FILES_KUSHIDANGO = [
-      "kushidango.png",
-      "Kushidango.png",
-      "kushidango.PNG",
-      "Kushidango.PNG",
-      "KUSHIDANGO.PNG",
-      "kushidango.jpg"
-    ];
+    const FILES_STAGE1_BG = ["kenban1.png","Kenban1.png","kenban1.PNG","Kenban1.PNG","KENBAN1.PNG","kenban1.jpg"];
+    const FILES_STAGE2_BG = ["kenban2.png","Kenban2.png","kenban2.PNG","Kenban2.PNG","KENBAN2.PNG","kenban2.jpg"];
+    const FILES_SAKURANBO = ["sakuranbo.png","Sakuranbo.png","sakuranbo.PNG","Sakuranbo.PNG","SAKURANBO.PNG","sakuranbo.jpg"];
+    const FILES_KUSHIDANGO = ["kushidango.png","Kushidango.png","kushidango.PNG","Kushidango.PNG","KUSHIDANGO.PNG","kushidango.jpg"];
 
 
     /* =========================================================
@@ -1032,65 +588,47 @@
     let successCount = 0;
     let isLocked = false;
 
-    let loadedPathSakuranbo = "";
-    let loadedPathKushidango = "";
-
     let isDragging = false;
-
     let startX = 0;
     let startY = 0;
-
     let currentX = 0;
     let currentY = 0;
-
     let hasPinged = false;
+
+    /* 読み込んだ絵と、読み取った結果 */
+    const assets = {
+      1: { done: false, loading: false, kb: null, item: null, waiters: [] },
+      2: { done: false, loading: false, kb: null, item: null, waiters: [] }
+    };
+
+    /* いまの並べ方（飛ばすとき・お皿に入れるときに使う） */
+    let L = null;
+    let lastZoneNorm = null;
+    let lastRot = 0;
+    let stageToken = 0;
 
 
     /* =========================================================
        3. DOM
        ========================================================= */
 
-    const screenStart =
-      document.getElementById("screen-start");
+    const screenStart  = document.getElementById("screen-start");
+    const screenGame   = document.getElementById("screen-game");
+    const screenReward = document.getElementById("screen-reward");
 
-    const screenGame =
-      document.getElementById("screen-game");
+    const btnTonton = document.getElementById("btn-tonton");
+    const btnReset  = document.getElementById("btn-reset");
+    const btnReplay = document.getElementById("btn-replay");
 
-    const screenReward =
-      document.getElementById("screen-reward");
+    const draggable     = document.getElementById("draggable");
+    const artSlot       = document.getElementById("art-slot");
+    const emojiFallback = document.getElementById("emoji-fallback");
+    const sourceBox     = document.getElementById("source-box");
 
-    const btnTonton =
-      document.getElementById("btn-tonton");
-
-    const btnReset =
-      document.getElementById("btn-reset");
-
-    const btnReplay =
-      document.getElementById("btn-replay");
-
-    const draggable =
-      document.getElementById("draggable");
-
-    const itemImg =
-      document.getElementById("item-img");
-
-    const emojiFallback =
-      document.getElementById("emoji-fallback");
-
-    const keyboardWrapper =
-      document.getElementById("keyboard-wrapper");
-
-    const trayArea =
-      document.getElementById("tray-area");
-
-    const cherryGuide =
-      document.getElementById("cherry-guide");
-
-    const dangoGuide =
-      document.getElementById("dango-guide");
-
-    const pingMessage =
-      document.getElementById("ping-message");
+    const keyboardWrapper = document.getElementById("keyboard-wrapper");
+    const targetZone      = document.getElementById("target-zone");
+    const trayArea        = document.getElementById("tray-area");
+    const pingMessage     = document.getElementById("ping-message");
 
 
     /* =========================================================
@@ -1100,17 +638,11 @@
     const audioPlayer = new Audio();
 
     function unlockAudioIOS() {
-
-      audioPlayer.src =
-        "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==";
-
+      audioPlayer.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==";
       audioPlayer.play().catch(() => {});
-
     }
 
-
     function playMp3(filename, onEndedCallback) {
-
       audioPlayer.pause();
       audioPlayer.currentTime = 0;
       audioPlayer.src = filename;
@@ -1119,48 +651,27 @@
       let safeTimeoutId = null;
 
       const finishHandler = () => {
-
         if (!hasExecuted) {
-
           hasExecuted = true;
-
-          if (safeTimeoutId) {
-            clearTimeout(safeTimeoutId);
-          }
-
+          if (safeTimeoutId) clearTimeout(safeTimeoutId);
           audioPlayer.onended = null;
           audioPlayer.onerror = null;
-
-          if (onEndedCallback) {
-            onEndedCallback();
-          }
+          if (onEndedCallback) onEndedCallback();
         }
       };
 
       if (onEndedCallback) {
-
         audioPlayer.onended = finishHandler;
         audioPlayer.onerror = finishHandler;
-
-        safeTimeoutId =
-          setTimeout(finishHandler, 6000);
-
+        safeTimeoutId = setTimeout(finishHandler, 6000);
       } else {
-
         audioPlayer.onended = null;
         audioPlayer.onerror = null;
       }
 
       audioPlayer.play().catch(err => {
-
-        console.log(
-          "Audio play failed:",
-          filename,
-          err
-        );
-
+        console.log("Audio play failed:", filename, err);
         finishHandler();
-
       });
     }
 
@@ -1172,65 +683,31 @@
     let audioContext = null;
 
     function playPing() {
-
       try {
-
         if (!audioContext) {
-          audioContext =
-            new (window.AudioContext ||
-                 window.webkitAudioContext)();
+          audioContext = new (window.AudioContext || window.webkitAudioContext)();
         }
+        if (audioContext.state === "suspended") audioContext.resume();
 
-        if (audioContext.state === "suspended") {
-          audioContext.resume();
-        }
-
-        const now =
-          audioContext.currentTime;
-
-        const oscillator =
-          audioContext.createOscillator();
-
-        const gain =
-          audioContext.createGain();
+        const now = audioContext.currentTime;
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
 
         oscillator.type = "sine";
+        oscillator.frequency.setValueAtTime(880, now);
+        oscillator.frequency.setValueAtTime(1320, now + 0.08);
 
-        oscillator.frequency.setValueAtTime(
-          880,
-          now
-        );
-
-        oscillator.frequency.setValueAtTime(
-          1320,
-          now + 0.08
-        );
-
-        gain.gain.setValueAtTime(
-          0.0001,
-          now
-        );
-
-        gain.gain.exponentialRampToValueAtTime(
-          0.18,
-          now + 0.015
-        );
-
-        gain.gain.exponentialRampToValueAtTime(
-          0.0001,
-          now + 0.22
-        );
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.exponentialRampToValueAtTime(0.18, now + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
 
         oscillator.connect(gain);
         gain.connect(audioContext.destination);
 
         oscillator.start(now);
         oscillator.stop(now + 0.23);
-
       } catch (e) {
-
         console.log("ping sound error", e);
-
       }
     }
 
@@ -1240,146 +717,336 @@
        ========================================================= */
 
     function showScreen(targetScreen) {
-
-      [
-        screenStart,
-        screenGame,
-        screenReward
-      ].forEach(s => {
-        s.classList.remove("active");
-      });
-
+      [screenStart, screenGame, screenReward].forEach(s => s.classList.remove("active"));
       targetScreen.classList.add("active");
-
-      if (targetScreen !== screenReward) {
-        btnReset.classList.remove("pika-pika");
-      }
+      if (targetScreen !== screenReward) btnReset.classList.remove("pika-pika");
     }
 
 
     /* =========================================================
-       7. 画像読み込み
+       7. 絵の読み込みと、色による場所の読み取り
        ========================================================= */
 
-    function loadImageWithFallback(
-      imgElement,
-      candidates,
-      fallbackEmoji,
-      onSuccessCallback
-    ) {
+    /* 候補のファイル名を順に試して、最初に読めた絵を返す */
+    function loadFirst(candidates, onOk, onFail) {
+      let i = 0;
+      const img = new Image();
+      img.onload = function () { onOk(img); };
+      img.onerror = function () {
+        i++;
+        if (i < candidates.length) {
+          img.src = candidates[i];
+        } else if (onFail) {
+          onFail();
+        }
+      };
+      img.src = candidates[0];
+    }
 
-      let index = 0;
+    /* 絵の中の、さくらんぼ・団子の場所を色で探す
+       mode "all"   … 色のついた部分すべて（さくらんぼ）
+       mode "balls" … ピンクと緑の丸だけ（団子。串は含めない） */
+    function analyzeArt(img, mode) {
+      try {
+        const nw = img.naturalWidth, nh = img.naturalHeight;
+        if (!nw || !nh) return null;
 
-      imgElement.style.display = "block";
+        const sc = Math.min(1, 400 / Math.max(nw, nh));
+        const cw = Math.max(1, Math.round(nw * sc));
+        const ch = Math.max(1, Math.round(nh * sc));
 
-      if (emojiFallback) {
-        emojiFallback.style.display = "none";
-      }
+        const cv = document.createElement("canvas");
+        cv.width = cw;
+        cv.height = ch;
+        const g = cv.getContext("2d");
+        g.drawImage(img, 0, 0, cw, ch);
+        const d = g.getImageData(0, 0, cw, ch).data;
 
-      imgElement.onerror = function() {
+        const kc = new Array(cw).fill(0), kr = new Array(ch).fill(0);
+        const bc = new Array(cw).fill(0), br = new Array(ch).fill(0);
+        let kn = 0, pn = 0, gn = 0, psx = 0, psy = 0, gsx = 0, gsy = 0;
 
-        index++;
+        for (let y = 0; y < ch; y++) {
+          for (let x = 0; x < cw; x++) {
+            const i = (y * cw + x) * 4;
+            const a = d[i + 3];
+            if (a < 40) continue;
 
-        if (index < candidates.length) {
+            const r = d[i], gg = d[i + 1], b = d[i + 2];
 
-          imgElement.src =
-            candidates[index];
+            /* 白くない部分（絵全体の大きさ） */
+            if (!(r > 235 && gg > 235 && b > 235)) { bc[x]++; br[y]++; }
 
-        } else {
+            const mx = Math.max(r, gg, b), mn = Math.min(r, gg, b);
+            const v = mx / 255;
+            const s = mx === 0 ? 0 : (mx - mn) / mx;
+            if (s < 0.35 || v < 0.5) continue;
 
-          imgElement.style.display =
-            "none";
+            const dl = mx - mn;
+            let h;
+            if (mx === r) h = ((gg - b) / dl) % 6;
+            else if (mx === gg) h = (b - r) / dl + 2;
+            else h = (r - gg) / dl + 4;
+            h *= 60;
+            if (h < 0) h += 360;
 
-          if (emojiFallback) {
+            const isPink = (h >= 320 || h <= 20);
+            const isGreen = (h >= 60 && h <= 160);
 
-            emojiFallback.style.display =
-              "block";
+            if (isPink) { pn++; psx += x; psy += y; }
+            if (isGreen) { gn++; gsx += x; gsy += y; }
 
-            emojiFallback.textContent =
-              fallbackEmoji;
+            const isKey = (mode === "balls") ? (isPink || isGreen) : true;
+            if (isKey) { kc[x]++; kr[y]++; kn++; }
           }
         }
-      };
 
-      imgElement.onload = function() {
-
-        if (onSuccessCallback) {
-          onSuccessCallback(
-            imgElement.src
-          );
+        function span(arr, minC) {
+          let a = -1, b = -1;
+          for (let i = 0; i < arr.length; i++) {
+            if (arr[i] >= minC) { if (a < 0) a = i; b = i; }
+          }
+          return a < 0 ? null : [a, b];
         }
-      };
 
-      imgElement.src = candidates[0];
+        let key = null;
+        if (kn >= 30) {
+          const sx = span(kc, 2), sy = span(kr, 2);
+          if (sx && sy) key = { x0: sx[0] / sc, x1: (sx[1] + 1) / sc, y0: sy[0] / sc, y1: (sy[1] + 1) / sc };
+        }
+
+        let body = { x0: 0, y0: 0, x1: nw, y1: nh };
+        const bsx = span(bc, 1), bsy = span(br, 1);
+        if (bsx && bsy) body = { x0: bsx[0] / sc, x1: (bsx[1] + 1) / sc, y0: bsy[0] / sc, y1: (bsy[1] + 1) / sc };
+
+        return {
+          nw: nw,
+          nh: nh,
+          key: key,
+          body: body,
+          pink: pn >= 10 ? { x: psx / pn / sc, y: psy / pn / sc } : null,
+          green: gn >= 10 ? { x: gsx / gn / sc, y: gsy / gn / sc } : null
+        };
+      } catch (e) {
+        return null;
+      }
     }
 
+    /* 読み取れなかったときの代わり（絵全体を使う） */
+    function synthInfo(img) {
+      const w = img.naturalWidth, h = img.naturalHeight;
+      const b = { x0: 0, y0: 0, x1: w, y1: h };
+      return { nw: w, nh: h, key: b, body: b, pink: null, green: null };
+    }
 
-    function setKeyboardBackgroundWithFallback(
-      candidates
-    ) {
+    /* 団子：ピンクが左、緑が右になる向きを選ぶ（0 / 90 / 180 / 270） */
+    function pickRotation(kbInfo, itInfo) {
+      if (!kbInfo || !itInfo) return null;
+      if (!kbInfo.pink || !kbInfo.green || !itInfo.pink || !itInfo.green) return null;
 
-      let index = 0;
+      const vk = { x: kbInfo.pink.x - kbInfo.green.x, y: kbInfo.pink.y - kbInfo.green.y };
+      const v  = { x: itInfo.pink.x - itInfo.green.x, y: itInfo.pink.y - itInfo.green.y };
 
-      keyboardWrapper.classList.remove(
-        "has-custom-bg"
+      const C = [1, 0, -1, 0];
+      const S = [0, 1, 0, -1];
+      let best = 0, bestDot = -Infinity;
+
+      for (let k = 0; k < 4; k++) {
+        const x2 = v.x * C[k] - v.y * S[k];
+        const y2 = v.x * S[k] + v.y * C[k];
+        const dot = x2 * vk.x + y2 * vk.y;
+        if (dot > bestDot) { bestDot = dot; best = k * 90; }
+      }
+      return best;
+    }
+
+    /* そのステージの絵を、最初に1回だけ読み込む */
+    function ensureAssets(n, cb) {
+      const A = assets[n];
+      if (A.done) { cb(); return; }
+
+      A.waiters.push(cb);
+      if (A.loading) return;
+      A.loading = true;
+
+      const mode = (n === 1) ? "all" : "balls";
+      let pending = 2;
+
+      const finish = () => {
+        pending--;
+        if (pending === 0) {
+          A.done = true;
+          A.loading = false;
+          const w = A.waiters;
+          A.waiters = [];
+          w.forEach(f => f());
+        }
+      };
+
+      loadFirst(
+        n === 1 ? FILES_STAGE1_BG : FILES_STAGE2_BG,
+        img => {
+          A.kb = {
+            url: img.src,
+            nat: { w: img.naturalWidth, h: img.naturalHeight },
+            info: analyzeArt(img, mode)
+          };
+          finish();
+        },
+        () => { A.kb = null; finish(); }
       );
 
-      function tryNext() {
-
-        if (index >= candidates.length) {
-
-          keyboardWrapper.style.backgroundImage =
-            "none";
-
-          return;
-        }
-
-        const img = new Image();
-
-        const testUrl =
-          candidates[index];
-
-        img.onload = function() {
-
-          keyboardWrapper.style.backgroundImage =
-            `url('${testUrl}')`;
-
-          keyboardWrapper.classList.add(
-            "has-custom-bg"
-          );
-        };
-
-        img.onerror = function() {
-
-          index++;
-
-          tryNext();
-        };
-
-        img.src = testUrl;
-      }
-
-      tryNext();
+      loadFirst(
+        n === 1 ? FILES_SAKURANBO : FILES_KUSHIDANGO,
+        img => {
+          A.item = { url: img.src, img: img, info: analyzeArt(img, mode) };
+          finish();
+        },
+        () => { A.item = null; finish(); }
+      );
     }
 
 
     /* =========================================================
-       8. ガイド表示
+       8. 絵を作る・並べる
        ========================================================= */
 
-    function updateGuide() {
+    /* 向きと大きさをつけた絵を作る。
+       mode "key"  … さくらんぼ・団子の丸の中心を、箱の中心に合わせる
+       mode "body" … 絵全体の中心を、箱の中心に合わせる */
+    function makeArt(src, info, s, rot, mode, W, H, interactive) {
+      const box = document.createElement("div");
+      box.style.position = "relative";
+      box.style.width = W + "px";
+      box.style.height = H + "px";
 
-      if (currentStage === 1) {
+      const c = (mode === "body") ? info.body : info.key;
+      const cx = (c.x0 + c.x1) / 2;
+      const cy = (c.y0 + c.y1) / 2;
 
-        cherryGuide.style.display = "flex";
-        dangoGuide.style.display = "none";
+      const img = document.createElement("img");
+      img.src = src;
+      img.draggable = false;
+      img.style.position = "absolute";
+      img.style.maxWidth = "none";
+      img.style.width = (info.nw * s) + "px";
+      img.style.height = (info.nh * s) + "px";
+      img.style.left = (W / 2 - cx * s) + "px";
+      img.style.top = (H / 2 - cy * s) + "px";
+      img.style.transformOrigin = (cx * s) + "px " + (cy * s) + "px";
+      img.style.transform = "rotate(" + rot + "deg)";
+      img.style.pointerEvents = interactive ? "auto" : "none";
+      img.style.filter = "drop-shadow(0 8px 18px rgba(0,0,0,0.25))";
 
-      } else {
-
-        cherryGuide.style.display = "none";
-        dangoGuide.style.display = "flex";
-      }
+      box.appendChild(img);
+      return box;
     }
+
+    /* ねらいの枠・動かす絵・左の箱の大きさをそろえる */
+    function layoutStage() {
+      const A = assets[currentStage];
+      if (!A || !A.done) return;
+
+      const cfg = STAGE[currentStage];
+
+      const cw = keyboardWrapper.clientWidth;
+      const ch = keyboardWrapper.clientHeight;
+      if (!cw || !ch) return;
+
+      /* 鍵盤の絵が実際に表示されている範囲 */
+      let ox = 0, oy = 0, rw = cw, rh = ch;
+      const nat = A.kb ? A.kb.nat : null;
+      if (nat) {
+        const sc = Math.min(cw / nat.w, ch / nat.h);
+        rw = nat.w * sc;
+        rh = nat.h * sc;
+        ox = (cw - rw) / 2;
+        oy = (ch - rh) / 2;
+      }
+
+      /* ねらいの枠：自動で見つけた場所、または手で決めた場所 */
+      const kinfo = A.kb ? A.kb.info : null;
+      let z;
+      if (cfg.auto && nat && kinfo && kinfo.key) {
+        const k = kinfo.key;
+        z = {
+          left: ox + k.x0 / nat.w * rw,
+          top:  oy + k.y0 / nat.h * rh,
+          w: (k.x1 - k.x0) / nat.w * rw,
+          h: (k.y1 - k.y0) / nat.h * rh
+        };
+      } else {
+        z = { left: ox + cfg.x * rw, top: oy + cfg.y * rh, w: cfg.w * rw, h: cfg.h * rh };
+      }
+      z.w = Math.max(20, z.w);
+      z.h = Math.max(20, z.h);
+
+      lastZoneNorm = { x: (z.left - ox) / rw, y: (z.top - oy) / rh, w: z.w / rw, h: z.h / rh };
+
+      targetZone.style.left = z.left + "px";
+      targetZone.style.top = z.top + "px";
+      targetZone.style.width = z.w + "px";
+      targetZone.style.height = z.h + "px";
+
+      /* 動かす絵 */
+      artSlot.innerHTML = "";
+      emojiFallback.style.display = "none";
+
+      let bw = 0, bh = 0;
+      L = null;
+      lastRot = 0;
+
+      if (A.item) {
+        const it = A.item;
+        const info = it.info ? Object.assign({}, it.info, { key: it.info.key || it.info.body }) : synthInfo(it.img);
+
+        let rot = (cfg.rot !== null && cfg.rot !== undefined) ? cfg.rot : pickRotation(kinfo, it.info);
+        if (rot === null || rot === undefined) {
+          rot = (currentStage === 2 && info.nh > info.nw) ? 270 : 0;
+        }
+        lastRot = rot;
+
+        const swap = (rot === 90 || rot === 270);
+        const kw0 = info.key.x1 - info.key.x0;
+        const kh0 = info.key.y1 - info.key.y0;
+        const kwR = Math.max(1, swap ? kh0 : kw0);
+        const khR = Math.max(1, swap ? kw0 : kh0);
+
+        const s = Math.min(z.w / kwR, z.h / khR) * cfg.scale;
+
+        artSlot.appendChild(makeArt(it.url, info, s, rot, "key", z.w, z.h, true));
+
+        const bw0 = info.body.x1 - info.body.x0;
+        const bh0 = info.body.y1 - info.body.y0;
+        bw = (swap ? bh0 : bw0) * s;
+        bh = (swap ? bw0 : bh0) * s;
+
+        L = { url: it.url, info: info, s: s, rot: rot, zw: z.w, zh: z.h, bw: bw, bh: bh };
+      } else {
+        emojiFallback.style.display = "block";
+        emojiFallback.textContent = currentStage === 1 ? "🍒" : "🍡";
+      }
+
+      /* 動かす絵の枠は、ねらいの枠と同じ大きさ */
+      draggable.style.width = z.w + "px";
+      draggable.style.height = z.h + "px";
+
+      /* 左の点線の箱 */
+      const colW = sourceBox.parentElement.clientWidth || 300;
+      const boxW = Math.min(Math.max(bw + 40, z.w + 40, 160), Math.max(colW - 16, 160));
+      const boxH = Math.max(bh + 40, z.h + 40, 140);
+      sourceBox.style.width = boxW + "px";
+      sourceBox.style.height = boxH + "px";
+
+      draggable.style.left = ((sourceBox.clientWidth - z.w) / 2) + "px";
+      draggable.style.top = ((sourceBox.clientHeight - z.h) / 2) + "px";
+
+      updateAdjustText();
+    }
+
+    window.addEventListener("resize", () => {
+      if (screenGame.classList.contains("active")) layoutStage();
+    });
 
 
     /* =========================================================
@@ -1387,70 +1054,30 @@
        ========================================================= */
 
     function startStage(stageNum) {
-
       currentStage = stageNum;
       successCount = 0;
       isLocked = false;
       hasPinged = false;
 
       trayArea.innerHTML = "";
-
       resetDraggablePosition();
 
-      updateGuide();
+      keyboardWrapper.style.backgroundImage = "none";
+      artSlot.innerHTML = "";
+      emojiFallback.style.display = "none";
 
-      if (stageNum === 1) {
+      showScreen(screenGame);
 
-        draggable.classList.remove(
-          "stage2-size"
-        );
+      const token = ++stageToken;
 
-        itemImg.classList.remove(
-          "is-dango"
-        );
+      ensureAssets(stageNum, () => {
+        if (token !== stageToken) return;
+        const A = assets[stageNum];
+        if (A.kb) keyboardWrapper.style.backgroundImage = "url('" + A.kb.url + "')";
+        layoutStage();
+      });
 
-        setKeyboardBackgroundWithFallback(
-          FILES_STAGE1_BG
-        );
-
-        loadImageWithFallback(
-          itemImg,
-          FILES_SAKURANBO,
-          "🍒",
-          path => {
-            loadedPathSakuranbo = path;
-          }
-        );
-
-        showScreen(screenGame);
-
-      } else {
-
-        draggable.classList.add(
-          "stage2-size"
-        );
-
-        itemImg.classList.add(
-          "is-dango"
-        );
-
-        setKeyboardBackgroundWithFallback(
-          FILES_STAGE2_BG
-        );
-
-        loadImageWithFallback(
-          itemImg,
-          FILES_KUSHIDANGO,
-          "🍡",
-          path => {
-            loadedPathKushidango = path;
-          }
-        );
-
-        showScreen(screenGame);
-
-        playMp3("start2.mp3");
-      }
+      if (stageNum === 2) playMp3("start2.mp3");
     }
 
 
@@ -1458,117 +1085,49 @@
        10. お皿へピューッ
        ========================================================= */
 
+    function getTrayWidth() {
+      const portrait = window.matchMedia("(orientation: portrait)").matches;
+      if (currentStage === 1) return portrait ? 80 : 120;
+      return portrait ? 85 : 150;
+    }
+
     function flyToTray(onComplete) {
+      if (!L) {
+        addItemToTray();
+        if (onComplete) onComplete();
+        return;
+      }
 
-      const sourceRect =
-        draggable.getBoundingClientRect();
+      const r = draggable.getBoundingClientRect();
+      const tr = trayArea.getBoundingClientRect();
+      const tx = tr.left + tr.width / 2;
+      const ty = tr.top + tr.height / 2;
 
-      const sourceCenterX =
-        sourceRect.left +
-        sourceRect.width / 2;
-
-      const sourceCenterY =
-        sourceRect.top +
-        sourceRect.height / 2;
-
-
-      const trayRect =
-        trayArea.getBoundingClientRect();
-
-      const targetCenterX =
-        trayRect.left +
-        trayRect.width / 2;
-
-      const targetCenterY =
-        trayRect.top +
-        trayRect.height / 2;
-
-
-      const flying =
-        document.createElement("img");
-
-      flying.className =
-        "flying-item";
-
-      flying.src =
-        currentStage === 1
-          ? (loadedPathSakuranbo || itemImg.src)
-          : (loadedPathKushidango || itemImg.src);
-
-
-      const startSize =
-        Math.min(
-          sourceRect.width,
-          sourceRect.height
-        );
-
-      flying.style.width =
-        startSize + "px";
-
-      flying.style.height =
-        startSize + "px";
-
-      flying.style.left =
-        (sourceCenterX - startSize / 2) + "px";
-
-      flying.style.top =
-        (sourceCenterY - startSize / 2) + "px";
-
-      flying.style.transform =
-        "scale(1) rotate(0deg)";
-
+      const flying = makeArt(L.url, L.info, L.s, L.rot, "key", L.zw, L.zh, false);
+      flying.className = "flying-item";
+      flying.style.position = "fixed";
+      flying.style.left = r.left + "px";
+      flying.style.top = r.top + "px";
+      flying.style.transform = "scale(1) rotate(0deg)";
       flying.style.opacity = "1";
 
       document.body.appendChild(flying);
 
-
-      /*
-       * 少し待ってから移動開始。
-       * 「そこからピューッと飛ぶ」が見える。
-       */
+      const endScale = getTrayWidth() / Math.max(1, L.bw);
 
       requestAnimationFrame(() => {
-
         requestAnimationFrame(() => {
-
-          const endSize =
-            currentStage === 1
-              ? 65
-              : 80;
-
-          flying.style.left =
-            (targetCenterX - endSize / 2) +
-            "px";
-
-          flying.style.top =
-            (targetCenterY - endSize / 2) +
-            "px";
-
-          flying.style.width =
-            endSize + "px";
-
-          flying.style.height =
-            endSize + "px";
-
-          flying.style.transform =
-            "scale(0.72) rotate(12deg)";
-
-          flying.style.opacity =
-            "0.75";
+          flying.style.left = (tx - L.zw / 2) + "px";
+          flying.style.top = (ty - L.zh / 2) + "px";
+          flying.style.transform = "scale(" + endScale + ") rotate(12deg)";
+          flying.style.opacity = "0.75";
         });
       });
 
-
       setTimeout(() => {
-
         flying.remove();
-
         addItemToTray();
-
-        if (onComplete) {
-          onComplete();
-        }
-
+        if (onComplete) onComplete();
       }, 570);
     }
 
@@ -1578,33 +1137,23 @@
        ========================================================= */
 
     function addItemToTray() {
+      const tw = getTrayWidth();
+      let el;
 
-      const trayImg =
-        document.createElement("img");
-
-      if (currentStage === 1) {
-
-        trayImg.className =
-          "tray-item";
-
-        trayImg.src =
-          loadedPathSakuranbo ||
-          itemImg.src;
-
+      if (L) {
+        const k = tw / Math.max(1, L.bw);
+        el = makeArt(L.url, L.info, L.s * k, L.rot, "body", L.bw * k, L.bh * k, false);
       } else {
-
-        trayImg.className =
-          "tray-item tray-item-dango";
-
-        trayImg.src =
-          loadedPathKushidango ||
-          itemImg.src;
+        el = document.createElement("div");
+        el.textContent = currentStage === 1 ? "🍒" : "🍡";
+        el.style.fontSize = (tw * 0.6) + "px";
       }
 
-      trayArea.appendChild(trayImg);
+      el.classList.add("tray-item");
+      trayArea.appendChild(el);
 
       requestAnimationFrame(() => {
-        trayImg.classList.add("pop-in");
+        el.classList.add("pop-in");
       });
     }
 
@@ -1614,94 +1163,38 @@
        ========================================================= */
 
     function getEventPos(e) {
-
-      if (
-        e.touches &&
-        e.touches.length > 0
-      ) {
-
-        return {
-          x: e.touches[0].clientX,
-          y: e.touches[0].clientY
-        };
+      if (e.touches && e.touches.length > 0) {
+        return { x: e.touches[0].clientX, y: e.touches[0].clientY };
       }
-
-      return {
-        x: e.clientX,
-        y: e.clientY
-      };
+      return { x: e.clientX, y: e.clientY };
     }
 
 
     /* =========================================================
-       13. 「ここですよ」判定
+       13. ねらいの枠に乗っているか
        ========================================================= */
 
-    function checkNearGuide() {
+    function isOverTarget(tolX, tolY) {
+      const z = targetZone.getBoundingClientRect();
+      const r = draggable.getBoundingClientRect();
 
-      if (!isDragging || isLocked) {
-        return;
-      }
+      const dx = Math.abs((r.left + r.width / 2) - (z.left + z.width / 2));
+      const dy = Math.abs((r.top + r.height / 2) - (z.top + z.height / 2));
 
-      const itemRect =
-        draggable.getBoundingClientRect();
+      return dx <= z.width * tolX && dy <= z.height * tolY;
+    }
 
-      const itemCenterX =
-        itemRect.left +
-        itemRect.width / 2;
+    function checkNearTarget() {
+      if (!isDragging || isLocked) return;
 
-      const itemCenterY =
-        itemRect.top +
-        itemRect.height / 2;
-
-
-      const guideRect =
-        currentStage === 1
-          ? cherryGuide.getBoundingClientRect()
-          : dangoGuide.getBoundingClientRect();
-
-
-      /*
-       * 中心がガイドの中に入ったら
-       * 「ここですよ」の反応。
-       */
-
-      const margin =
-        currentStage === 1
-          ? 45
-          : 55;
-
-      const near =
-        itemCenterX >=
-          guideRect.left - margin &&
-        itemCenterX <=
-          guideRect.right + margin &&
-        itemCenterY >=
-          guideRect.top - margin &&
-        itemCenterY <=
-          guideRect.bottom + margin;
-
-
-      if (near) {
-
+      if (isOverTarget(NEAR_X, NEAR_Y)) {
         if (!hasPinged) {
-
           hasPinged = true;
-
           playPing();
-
-          cherryGuide.classList.add("near");
-          dangoGuide.classList.add("near");
-
           showPingMessage();
         }
-
       } else {
-
         hasPinged = false;
-
-        cherryGuide.classList.remove("near");
-        dangoGuide.classList.remove("near");
       }
     }
 
@@ -1711,589 +1204,352 @@
        ========================================================= */
 
     function showPingMessage() {
-
       pingMessage.classList.remove("show");
 
-      const guide =
-        currentStage === 1
-          ? cherryGuide
-          : dangoGuide;
+      const rect = targetZone.getBoundingClientRect();
 
-      const rect =
-        guide.getBoundingClientRect();
-
-      pingMessage.style.left =
-        (
-          rect.left +
-          rect.width / 2 -
-          65
-        ) + "px";
-
-      pingMessage.style.top =
-        (
-          rect.top -
-          55
-        ) + "px";
-
+      pingMessage.style.left = (rect.left + rect.width / 2 - 65) + "px";
+      pingMessage.style.top = (rect.top - 55) + "px";
 
       void pingMessage.offsetWidth;
-
       pingMessage.classList.add("show");
     }
 
 
     /* =========================================================
-       15. ドラッグ開始
+       15. ドラッグ
        ========================================================= */
 
     function handleDragStart(e) {
-
       unlockAudioIOS();
 
-      if (isDragging || isLocked) {
-        return;
-      }
+      if (isDragging || isLocked) return;
 
       isDragging = true;
       hasPinged = false;
 
-      draggable.classList.remove(
-        "snap-back"
-      );
+      draggable.classList.remove("snap-back");
 
-      const pos =
-        getEventPos(e);
+      const pos = getEventPos(e);
+      startX = pos.x - currentX;
+      startY = pos.y - currentY;
 
-      startX =
-        pos.x - currentX;
-
-      startY =
-        pos.y - currentY;
-
-      if (e.cancelable) {
-        e.preventDefault();
-      }
+      if (e.cancelable) e.preventDefault();
     }
-
-
-    /* =========================================================
-       16. ドラッグ中
-       ========================================================= */
 
     function handleDragMove(e) {
+      if (!isDragging) return;
 
-      if (!isDragging) {
-        return;
-      }
+      if (e.cancelable) e.preventDefault();
 
-      if (e.cancelable) {
-        e.preventDefault();
-      }
+      const pos = getEventPos(e);
+      currentX = pos.x - startX;
+      currentY = pos.y - startY;
 
-      const pos =
-        getEventPos(e);
+      draggable.style.transform = "translate3d(" + currentX + "px," + currentY + "px,0px)";
 
-      currentX =
-        pos.x - startX;
-
-      currentY =
-        pos.y - startY;
-
-
-      draggable.style.transform =
-        `translate3d(
-          ${currentX}px,
-          ${currentY}px,
-          0px
-        )`;
-
-
-      /*
-       * 動かしている途中で
-       * 黒鍵の場所に近づいたら反応。
-       */
-
-      checkNearGuide();
+      checkNearTarget();
     }
 
-
-    /* =========================================================
-       17. ドラッグ終了
-       ========================================================= */
-
     function handleDragEnd() {
-
-      if (!isDragging) {
-        return;
-      }
+      if (!isDragging) return;
 
       isDragging = false;
-
-      const guide =
-        currentStage === 1
-          ? cherryGuide
-          : dangoGuide;
-
-      const guideRect =
-        guide.getBoundingClientRect();
-
-
-      const itemRect =
-        draggable.getBoundingClientRect();
-
-      const itemCenterX =
-        itemRect.left +
-        itemRect.width / 2;
-
-      const itemCenterY =
-        itemRect.top +
-        itemRect.height / 2;
-
-
-      /*
-       * ガイドの範囲。
-       * 少しだけ余裕を持たせているので、
-       * 小さい子が完全な位置合わせを
-       * しなくても成功しやすい。
-       */
-
-      const MARGIN_X =
-        currentStage === 1
-          ? 28
-          : 38;
-
-      const MARGIN_Y_TOP = 35;
-      const MARGIN_Y_BOTTOM = 35;
-
-
-      const isHit =
-        itemCenterX >=
-          guideRect.left - MARGIN_X &&
-
-        itemCenterX <=
-          guideRect.right + MARGIN_X &&
-
-        itemCenterY >=
-          guideRect.top - MARGIN_Y_TOP &&
-
-        itemCenterY <=
-          guideRect.bottom + MARGIN_Y_BOTTOM;
-
-
-      guide.classList.remove("near");
       hasPinged = false;
 
+      const isHit = isOverTarget(HIT_X, HIT_Y);
 
       if (isHit) {
 
-        /*
-         * 正解
-         */
-
         successCount++;
-
         isLocked = true;
-
-
-        /*
-         * お皿へピューッ
-         */
 
         flyToTray(() => {
 
           if (successCount === 1) {
-
             isLocked = false;
             resetDraggablePosition();
-
             playMp3("success1.mp3");
-
           }
 
           else if (successCount === 2) {
-
             isLocked = false;
             resetDraggablePosition();
-
             playMp3("success2.mp3");
-
           }
 
           else if (successCount >= 3) {
 
             if (currentStage === 1) {
-
-              /*
-               * さくらんぼ3つ目
-               */
-
-              playMp3(
-                "3ko.mp3",
-                () => {
-                  startStage(2);
-                }
-              );
-
+              playMp3("3ko.mp3", () => { startStage(2); });
             }
 
             else {
-
-              /*
-               * お団子3つ目
-               */
-
-              playMp3(
-                "clear2.mp3",
-                () => {
-
-                  showRewardScreen();
-
-                  playMp3(
-                    "fanfare.mp3",
-                    () => {
-                      playMp3("retry.mp3");
-                    }
-                  );
-                }
-              );
+              playMp3("clear2.mp3", () => {
+                showRewardScreen();
+                playMp3("fanfare.mp3", () => { playMp3("retry.mp3"); });
+              });
             }
           }
 
         });
 
-
       } else {
 
-        /*
-         * 不正解
-         */
-
-        draggable.classList.add(
-          "snap-back"
-        );
-
+        draggable.classList.add("snap-back");
         currentX = 0;
         currentY = 0;
-
-        draggable.style.transform =
-          "translate3d(0px,0px,0px)";
+        draggable.style.transform = "translate3d(0px,0px,0px)";
       }
     }
 
 
     /* =========================================================
-       18. 初期位置
+       16. 初期位置
        ========================================================= */
 
     function resetDraggablePosition() {
-
-      draggable.classList.remove(
-        "snap-back"
-      );
-
+      draggable.classList.remove("snap-back");
       currentX = 0;
       currentY = 0;
-
-      draggable.style.transform =
-        "translate3d(0px,0px,0px)";
-
+      draggable.style.transform = "translate3d(0px,0px,0px)";
       hasPinged = false;
     }
 
 
     /* =========================================================
-       19. イベント
+       17. イベント
        ========================================================= */
 
-    draggable.addEventListener(
-      "touchstart",
-      handleDragStart,
-      { passive:false }
-    );
+    draggable.addEventListener("touchstart", handleDragStart, { passive: false });
+    window.addEventListener("touchmove", handleDragMove, { passive: false });
+    window.addEventListener("touchend", handleDragEnd, { passive: false });
 
-    window.addEventListener(
-      "touchmove",
-      handleDragMove,
-      { passive:false }
-    );
-
-    window.addEventListener(
-      "touchend",
-      handleDragEnd,
-      { passive:false }
-    );
-
-
-    draggable.addEventListener(
-      "mousedown",
-      handleDragStart
-    );
-
-    window.addEventListener(
-      "mousemove",
-      handleDragMove
-    );
-
-    window.addEventListener(
-      "mouseup",
-      handleDragEnd
-    );
+    draggable.addEventListener("mousedown", handleDragStart);
+    window.addEventListener("mousemove", handleDragMove);
+    window.addEventListener("mouseup", handleDragEnd);
 
 
     /* =========================================================
-       20. くす玉・紙吹雪
+       18. くす玉・紙吹雪
        ========================================================= */
 
-    const canvas =
-      document.getElementById(
-        "confetti-canvas"
-      );
-
-    const ctx =
-      canvas.getContext("2d");
+    const canvas = document.getElementById("confetti-canvas");
+    const ctx = canvas.getContext("2d");
 
     let particles = [];
     let animationId = null;
 
-
     function showRewardScreen() {
-
       showScreen(screenReward);
-
-      btnReset.classList.add(
-        "pika-pika"
-      );
-
+      btnReset.classList.add("pika-pika");
       startConfetti();
     }
 
-
     function resizeCanvas() {
-
-      canvas.width =
-        window.innerWidth;
-
-      canvas.height =
-        window.innerHeight;
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
     }
 
-
-    window.addEventListener(
-      "resize",
-      resizeCanvas
-    );
-
+    window.addEventListener("resize", resizeCanvas);
 
     function startConfetti() {
-
       resizeCanvas();
-
       particles = [];
 
-      const colors = [
-        "#f43f5e",
-        "#0ea5e9",
-        "#eab308",
-        "#22c55e",
-        "#a855f7",
-        "#ec4899"
-      ];
+      const colors = ["#f43f5e", "#0ea5e9", "#eab308", "#22c55e", "#a855f7", "#ec4899"];
 
       for (let i = 0; i < 120; i++) {
-
         particles.push({
-
-          x:
-            Math.random() *
-            canvas.width,
-
-          y:
-            Math.random() *
-              canvas.height -
-            canvas.height,
-
-          size:
-            Math.random() *
-              14 +
-            6,
-
-          color:
-            colors[
-              Math.floor(
-                Math.random() *
-                colors.length
-              )
-            ],
-
-          vy:
-            Math.random() * 3 + 2,
-
-          vx:
-            Math.random() * 2 - 1,
-
-          rotation:
-            Math.random() * 360,
-
-          rotSpeed:
-            Math.random() * 4 - 2
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height - canvas.height,
+          size: Math.random() * 14 + 6,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          vy: Math.random() * 3 + 2,
+          vx: Math.random() * 2 - 1,
+          rotation: Math.random() * 360,
+          rotSpeed: Math.random() * 4 - 2
         });
       }
 
       renderConfetti();
     }
 
-
     function renderConfetti() {
-
-      ctx.clearRect(
-        0,
-        0,
-        canvas.width,
-        canvas.height
-      );
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       particles.forEach(p => {
-
         p.y += p.vy;
         p.x += p.vx;
         p.rotation += p.rotSpeed;
 
-
         if (p.y > canvas.height) {
-
           p.y = -20;
-
-          p.x =
-            Math.random() *
-            canvas.width;
+          p.x = Math.random() * canvas.width;
         }
 
-
         ctx.save();
-
-        ctx.translate(
-          p.x,
-          p.y
-        );
-
-        ctx.rotate(
-          p.rotation *
-          Math.PI /
-          180
-        );
-
-        ctx.fillStyle =
-          p.color;
-
-        ctx.fillRect(
-          -p.size / 2,
-          -p.size / 2,
-          p.size,
-          p.size
-        );
-
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rotation * Math.PI / 180);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
         ctx.restore();
-
       });
 
-
-      animationId =
-        requestAnimationFrame(
-          renderConfetti
-        );
+      animationId = requestAnimationFrame(renderConfetti);
     }
 
-
     function stopConfetti() {
-
       if (animationId) {
-
-        cancelAnimationFrame(
-          animationId
-        );
-
+        cancelAnimationFrame(animationId);
         animationId = null;
       }
     }
 
 
     /* =========================================================
-       21. スタート
+       19. スタート
        ========================================================= */
 
-    btnTonton.addEventListener(
-      "click",
-      () => {
+    btnTonton.addEventListener("click", () => {
+      unlockAudioIOS();
+      startStage(1);
+      playMp3("start1.mp3");
+    });
 
+    screenStart.addEventListener("click", e => {
+      if (e.target === screenStart) {
         unlockAudioIOS();
-
         startStage(1);
-
-        playMp3(
-          "start1.mp3"
-        );
+        playMp3("start1.mp3");
       }
-    );
-
-
-    screenStart.addEventListener(
-      "click",
-      e => {
-
-        if (e.target === screenStart) {
-
-          unlockAudioIOS();
-
-          startStage(1);
-
-          playMp3(
-            "start1.mp3"
-          );
-        }
-      }
-    );
+    });
 
 
     /* =========================================================
-       22. リセット
+       20. リセット・もう一度
        ========================================================= */
 
-    btnReset.addEventListener(
-      "click",
-      () => {
+    btnReset.addEventListener("click", () => {
+      isLocked = false;
+      stageToken++;
+      audioPlayer.pause();
+      stopConfetti();
+      showScreen(screenStart);
+    });
 
-        isLocked = false;
-
-        audioPlayer.pause();
-
-        stopConfetti();
-
-        showScreen(
-          screenStart
-        );
-      }
-    );
+    btnReplay.addEventListener("click", () => {
+      isLocked = false;
+      stageToken++;
+      audioPlayer.pause();
+      stopConfetti();
+      showScreen(screenStart);
+    });
 
 
     /* =========================================================
-       23. もう一度
+       21. 調整パネル（アドレスの最後に ?adjust=1 を付けたときだけ）
        ========================================================= */
 
-    btnReplay.addEventListener(
-      "click",
-      () => {
+    function fmt(n) { return (Math.round(n * 1000) / 1000).toFixed(3); }
 
-        isLocked = false;
+    function updateAdjustText() {
+      const el = document.getElementById("adj-text");
+      if (!el) return;
 
-        audioPlayer.pause();
+      const c = STAGE[currentStage];
+      const z = lastZoneNorm || { x: 0, y: 0, w: 0, h: 0 };
+      const A = assets[currentStage];
+      const found = !!(A && A.kb && A.kb.info && A.kb.info.key);
 
-        stopConfetti();
+      el.textContent =
+        "ステージ" + currentStage + "【" + (c.auto ? "自動" : "手動") + "】" +
+        " 左=" + fmt(z.x) + " 上=" + fmt(z.y) +
+        " 幅=" + fmt(z.w) + " 高=" + fmt(z.h) +
+        " 絵=" + fmt(c.scale) +
+        " 向き=" + lastRot + (c.rot === null ? "(自動)" : "(手動)") +
+        " 検出=" + (found ? "○" : "×");
+    }
 
-        showScreen(
-          screenStart
-        );
+    function ensureManual() {
+      const c = STAGE[currentStage];
+      if (c.auto && lastZoneNorm) {
+        c.x = lastZoneNorm.x;
+        c.y = lastZoneNorm.y;
+        c.w = lastZoneNorm.w;
+        c.h = lastZoneNorm.h;
       }
-    );
+      c.auto = false;
+      return c;
+    }
+
+    function buildAdjustPanel() {
+      targetZone.classList.add("adjust-on");
+
+      const p = document.createElement("div");
+      p.id = "adjust-panel";
+      p.innerHTML =
+        '<div class="row">' +
+          '<button id="adj-s1">ステージ1</button>' +
+          '<button id="adj-s2">ステージ2</button>' +
+          '<button id="adj-rot">絵を回す</button>' +
+          '<button id="adj-auto">自動にもどす</button>' +
+        '</div>' +
+        '<div class="row">場所：' +
+          '<button id="adj-l">◀</button><button id="adj-r">▶</button>' +
+          '<button id="adj-u">▲</button><button id="adj-d">▼</button>' +
+        '</div>' +
+        '<div class="row">わく：' +
+          '<button id="adj-wm">幅−</button><button id="adj-wp">幅＋</button>' +
+          '<button id="adj-hm">高−</button><button id="adj-hp">高＋</button>' +
+        '</div>' +
+        '<div class="row">動かす絵：' +
+          '<button id="adj-sm">小さく</button><button id="adj-sp">大きく</button>' +
+        '</div>' +
+        '<div id="adj-text"></div>';
+      document.body.appendChild(p);
+
+      const S = 0.005;
+
+      function bind(id, fn) {
+        document.getElementById(id).addEventListener("click", () => {
+          const c = ensureManual();
+          fn(c);
+          layoutStage();
+        });
+      }
+
+      document.getElementById("adj-s1").addEventListener("click", () => startStage(1));
+      document.getElementById("adj-s2").addEventListener("click", () => startStage(2));
+
+      document.getElementById("adj-rot").addEventListener("click", () => {
+        STAGE[currentStage].rot = (lastRot + 90) % 360;
+        layoutStage();
+      });
+
+      document.getElementById("adj-auto").addEventListener("click", () => {
+        const c = STAGE[currentStage];
+        c.auto = true;
+        c.rot = null;
+        c.scale = 1.0;
+        layoutStage();
+      });
+
+      bind("adj-l",  c => { c.x -= S; });
+      bind("adj-r",  c => { c.x += S; });
+      bind("adj-u",  c => { c.y -= S; });
+      bind("adj-d",  c => { c.y += S; });
+      bind("adj-wm", c => { c.w = Math.max(0.02, c.w - S); });
+      bind("adj-wp", c => { c.w += S; });
+      bind("adj-hm", c => { c.h = Math.max(0.02, c.h - S); });
+      bind("adj-hp", c => { c.h += S; });
+      bind("adj-sm", c => { c.scale = Math.max(0.2, c.scale - 0.02); });
+      bind("adj-sp", c => { c.scale += 0.02; });
+
+      updateAdjustText();
+    }
+
+    if (ADJUST) buildAdjustPanel();
 
   </script>
 
